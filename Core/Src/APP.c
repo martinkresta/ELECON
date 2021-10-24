@@ -17,6 +17,9 @@
 #include "VARS.h"
 #include "SCOM.h"
 #include "COM.h"
+#include "AC.h"
+#include "BMS1.h"
+
 
 //#include "watchdog.h"
 
@@ -168,6 +171,33 @@ static void ProcessMessage(s_CanRxMsg* msg)
 	return;
 }
 
+
+
+/* Interrupt callbacks*/
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if (huart == huart1)
+	{
+		SCOM_UartTxCallback();
+	}
+}
+
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if (huart == huart1)
+	{
+		SCOM_UartRxCallback();
+	}
+	else if (huart == huart3)
+	{
+		BMS1_UartTxCallback();
+	}
+	else if (huart == huart2)
+	{
+		//BMS2_UartTxCallback();
+	}
+}
 
 
 

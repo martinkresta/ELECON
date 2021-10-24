@@ -222,25 +222,21 @@ static void ProcessMessage(void)
 	return;
 }
 
-
-
-
-/* Interrupt callbacks*/
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+/* Interrupt callbacks */
+void SCOM_UartTxCallback(void)
 {
-	if (huart == ComUart)
-	{
-		mTxBusy = 0;
-	}
+	mTxBusy = 0;
 }
 
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+void SCOM_UartRxCallback(void)
 {
-	if (huart == ComUart)
-	{
-		mNewDataReady = 1;
-		mRxLength = 1;
-		ProcessMessage();
-	}
+	mNewDataReady = 1;
+	mRxLength = 1;
+	ProcessMessage();
 }
+
+
+
+
+
