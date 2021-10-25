@@ -6,6 +6,8 @@
  *       Brief: Module for one-way communication with BMS on battery pack ()
  */
 
+#include "BMS1.h"
+
 uint8_t mRxData[DMA_REC_LENGTH];  // buffer for reception of raw BMS data
 uint8_t* mBmsData;
 uint8_t mNewDataReady;
@@ -14,8 +16,8 @@ volatile uint8_t mPackInfoValid;
 
 sPackInfo mPackInfo;
 sLiveData mLiveData;
-sCell* Cells;
-
+sCell Cells[16];
+UART_HandleTypeDef* mBmsUart;
 
 
 void DecodeData(void);
@@ -23,27 +25,27 @@ uint8_t IsChecksumValid(void);
 
 
 // Initialization of the BMS monitoring module
-void BMS_Init(void)
+void BMS1_Init(UART_HandleTypeDef* huart)
 {
-	mPackInfoValid = 0;
+	mPackInfoValid = 1;
 	mNewDataReady = 0;
 	mRecLength = 0;
+	mBmsUart = huart;
 
 
 
+	HAL_UART_Receive_DMA(mBmsUart, mRxData, DMA_REC_LENGTH);
 
-	HAL_UART_Receive_DMA(ComUart, mRxBuffer, 10);
 
-
-	// enable receiver end receive interrupts
+/*	// enable receiver end receive interrupts
 	BMS_UART->CR1 &= ~0x1; //  UE  = 0
 	BMS_UART->CR3 |= 0x1000; // OVRDIS - disable overrun detection
-	BMS_UART->CR1 = 0x15; //  IDLEIE, RE, UE
+	BMS_UART->CR1 = 0x15; //  IDLEIE, RE, UE*/
 
 }
 
 // Update function, to the called periodically by the scheduler
-void BMS_Update_500ms(void)
+void BMS1_Update_500ms(void)
 {
 	if (mNewDataReady)
 	{
@@ -73,14 +75,16 @@ void BMS_Update_500ms(void)
 		}
 
 
-		BMS_UART->RQR |= 0x08; //   RXFRQ    (receive data flush)
+/*		BMS_UART->RQR |= 0x08; //   RXFRQ    (receive data flush)
 		BMS_UART->ICR = 0x10;  // clear the IDLE flag
 	//	BMS_UART->CR1 = 0x15; //  IDLEIE, RE, UE
 		// Re-enable DMA receiver
 		DMA1_Channel3->CNDTR = DMA_REC_LENGTH;
 		DMA1_Channel3->CCR |= DMA_CCR_EN;
+*/
+		HAL_UART_Receive_DMA(mBmsUart, mRxData, DMA_REC_LENGTH);
 
-	    mNewDataReady = 0;
+	  mNewDataReady = 0;
 	}
 
 }
@@ -144,7 +148,7 @@ void DecodeData(void)
 		mPackInfo.Vmin_mV = 5 * ((mBmsData[51]<<8) | mBmsData[52]);
 		mPackInfo.Vmax_mV = 5 * ((mBmsData[53]<<8) | mBmsData[54]);
 		mPackInfo.Vbalance_mV = 5 * ((mBmsData[55]<<8) | mBmsData[56]);
-		Cells = malloc(mPackInfo.NumOfCells * sizeof(sCell));
+	//	Cells = malloc(mPackInfo.NumOfCells * sizeof(sCell));
 		if (Cells != NULL)
 		{
 			mPackInfoValid = 1;
@@ -166,22 +170,22 @@ void LPUART1_IRQHandler(void)
 	mRecLength = DMA_REC_LENGTH - DMA1_Channel3->CNDTR;
 
 	// Disable the DMA channel
-	DMA1_Channel3->CCR &= ~DMA_CCR_EN; /* (8) */
+	DMA1_Channel3->CCR &= ~DMA_CCR_EN;
 	BMS_UART->RQR |= 0x08; //
 	BMS_UART->ICR = 0x10;  // clear the IDLE flag
 
 	mNewDataReady = 1;
 
-}
-*/
+}*/
 
 
 
 
 
-void SCOM_UartRxCallback(void)
+
+void BMS1_UartTxCallback(void)
 {
 	mNewDataReady = 1;
-	mRxLength = 1;
-	ProcessMessage();
+	mRecLength = 1;
+	//ProcessMessage();
 }

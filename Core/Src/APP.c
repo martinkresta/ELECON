@@ -43,6 +43,8 @@ void APP_Init(void)
 	SCOM_Init(&huart1);
 	MCAN_Init(&hcan1, THIS_NODE);
   COM_Init(THIS_NODE);
+  AC_Init();
+  BMS1_Init(&huart3);
 
 	WDG_Init(3000);
 
@@ -176,7 +178,7 @@ static void ProcessMessage(s_CanRxMsg* msg)
 /* Interrupt callbacks*/
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
-	if (huart == huart1)
+	if (huart->Instance == huart1.Instance)
 	{
 		SCOM_UartTxCallback();
 	}
@@ -185,15 +187,15 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	if (huart == huart1)
+	if (huart->Instance == huart1.Instance)
 	{
 		SCOM_UartRxCallback();
 	}
-	else if (huart == huart3)
+	else if (huart->Instance == huart3.Instance)
 	{
 		BMS1_UartTxCallback();
 	}
-	else if (huart == huart2)
+	else if (huart->Instance == huart2.Instance)
 	{
 		//BMS2_UartTxCallback();
 	}

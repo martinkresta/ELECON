@@ -9,7 +9,9 @@
 #include "OW.h"
 #include "TEMP.h"
 #include "SCOM.h"
-//#include "watchdog.h"
+#include "BMS1.h"
+#include "watchdog.h"
+#include "AC.h"
 
 
 
@@ -245,6 +247,7 @@ static void Timer_Task_250ms(void)
 static void Timer_Task_500ms(void)
 {
 	//HAL_GPIO_TogglePin(LED_B_GPIO_Port,LED_B_Pin);
+	BMS1_Update_500ms();
 
 }
 
