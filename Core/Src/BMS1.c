@@ -7,8 +7,9 @@
  */
 
 #include "BMS1.h"
+#include "VARS.h"
 
-uint8_t mRxData[DMA_REC_LENGTH];  // buffer for reception of raw BMS data
+uint8_t mRxData[DMA_REC_LENGTH +2];  // buffer for reception of raw BMS data
 uint8_t* mBmsData;
 uint8_t mNewDataReady;
 uint8_t mRecLength;
@@ -27,26 +28,29 @@ uint8_t IsChecksumValid(void);
 // Initialization of the BMS monitoring module
 void BMS1_Init(UART_HandleTypeDef* huart)
 {
+	HAL_StatusTypeDef UartRetval;
+	uint32_t UartError;
 	mPackInfoValid = 1;
 	mNewDataReady = 0;
 	mRecLength = 0;
 	mBmsUart = huart;
 
 
-
-	HAL_UART_Receive_DMA(mBmsUart, mRxData, DMA_REC_LENGTH);
-
-
-/*	// enable receiver end receive interrupts
-	BMS_UART->CR1 &= ~0x1; //  UE  = 0
-	BMS_UART->CR3 |= 0x1000; // OVRDIS - disable overrun detection
-	BMS_UART->CR1 = 0x15; //  IDLEIE, RE, UE*/
+	UartRetval = HAL_UARTEx_ReceiveToIdle_DMA(mBmsUart, mRxData, DMA_REC_LENGTH);
+	if(UartRetval  != HAL_OK)
+	{
+		UartError = HAL_UART_GetError(mBmsUart);
+	}
 
 }
 
 // Update function, to the called periodically by the scheduler
 void BMS1_Update_500ms(void)
 {
+	HAL_StatusTypeDef UartRetval;
+	uint32_t UartError;
+	uint8_t validflag = 0;
+
 	if (mNewDataReady)
 	{
 		if (mRecLength >= (BMS_DATA_LENGTH - 1))
@@ -63,29 +67,67 @@ void BMS1_Update_500ms(void)
 			if (1 == IsChecksumValid())
 			{
 				DecodeData();
+				validflag = 1;
 			}
 			else
 			{
 				// TBD, report invalid checksum
+				validflag = 0;
 			}
 		}
 		else // incomplete message - ignore it
 		{
+			validflag = 0;
 			// TBD, report the thing
 		}
 
-
-/*		BMS_UART->RQR |= 0x08; //   RXFRQ    (receive data flush)
-		BMS_UART->ICR = 0x10;  // clear the IDLE flag
-	//	BMS_UART->CR1 = 0x15; //  IDLEIE, RE, UE
-		// Re-enable DMA receiver
-		DMA1_Channel3->CNDTR = DMA_REC_LENGTH;
-		DMA1_Channel3->CCR |= DMA_CCR_EN;
-*/
-		HAL_UART_Receive_DMA(mBmsUart, mRxData, DMA_REC_LENGTH);
-
-	  mNewDataReady = 0;
+		mNewDataReady = 0;
 	}
+	UartRetval = HAL_UARTEx_ReceiveToIdle_DMA(mBmsUart, mRxData, DMA_REC_LENGTH);
+	if(UartRetval  != HAL_OK)
+	{
+		UartError = HAL_UART_GetError(mBmsUart);
+	}
+
+	VAR_SetVariable(VAR_BMS1_VOLTAGE_V10, mLiveData.VoltageTotal_mV/100, validflag);
+	VAR_SetVariable(VAR_BMS1_SOC, mLiveData.SOC, validflag);
+	VAR_SetVariable(VAR_BMS1_CURRENT_A10, mLiveData.ChargingCurrent_mA/100, validflag);
+	VAR_SetVariable(VAR_BMS1_ENERGY_STORED_WH, mLiveData.Energystored_Wh, validflag);
+	VAR_SetVariable(VAR_BMS1_TODAY_ENERGY_WH, mLiveData.TodayCharging_Wh, validflag);
+
+
+	VAR_SetVariable(VAR_BMS1_CELL1_MV, Cells[0].Voltage_mV, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL2_MV, Cells[1].Voltage_mV, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL3_MV, Cells[2].Voltage_mV, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL4_MV, Cells[3].Voltage_mV, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL5_MV, Cells[4].Voltage_mV, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL6_MV, Cells[5].Voltage_mV, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL7_MV, Cells[6].Voltage_mV, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL8_MV, Cells[7].Voltage_mV, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL9_MV, Cells[8].Voltage_mV, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL10_MV, Cells[9].Voltage_mV, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL11_MV, Cells[10].Voltage_mV, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL12_MV, Cells[11].Voltage_mV, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL13_MV, Cells[12].Voltage_mV, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL14_MV, Cells[13].Voltage_mV, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL15_MV, Cells[14].Voltage_mV, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL16_MV, Cells[15].Voltage_mV, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL1_C, Cells[0].Temp_C, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL2_C, Cells[1].Temp_C, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL3_C, Cells[2].Temp_C, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL4_C, Cells[3].Temp_C, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL5_C, Cells[4].Temp_C, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL6_C, Cells[5].Temp_C, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL7_C, Cells[6].Temp_C, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL8_C, Cells[7].Temp_C, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL9_C, Cells[8].Temp_C, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL10_C, Cells[9].Temp_C, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL11_C, Cells[10].Temp_C, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL12_C, Cells[11].Temp_C, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL13_C, Cells[12].Temp_C, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL14_C, Cells[13].Temp_C, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL15_C, Cells[14].Temp_C, validflag);
+	VAR_SetVariable(VAR_BMS1_CELL16_C, Cells[15].Temp_C, validflag);
 
 }
 
@@ -131,17 +173,8 @@ void DecodeData(void)
 		mLiveData.TotalDischarging_kWh = (mBmsData[44]<<16)|(mBmsData[45]<<8)|(mBmsData[46]);
 		Cells[(mBmsData[24] - 1)].Voltage_mV = 5 * ((mBmsData[26]<<8) | mBmsData[27]);
 		Cells[(mBmsData[24] - 1)].Temp_C= ((mBmsData[28]<<8) | mBmsData[29]) - 0x0114;
-
-
-		// small memory usage version
-
-		//mLiveData.VoltageTotal_mV = 5 * ((__builtin_bswap32(*((uint32_t*)(&mBmsData[0]))))>>8);
-
-	//	sprintf(message, "Voltage %d mV \r\n", mLiveData.VoltageTotal_mV);
-	//	UART_Send(message, strlen(message));
-
 	}
-	else  // we have to first allocate space for cell infos
+	else
 	{
 		mPackInfo.NumOfCells =  mBmsData[25];
 		mPackInfo.Capacity_Wh = 100 * ((mBmsData[49]<<8) | mBmsData[50]);
@@ -162,30 +195,9 @@ void DecodeData(void)
 }
 
 
-/*
-void LPUART1_IRQHandler(void)
-{
-	// Interrupt is enabled only for IDLE detection
-	// Read the length of the answer from the DMA counter
-	mRecLength = DMA_REC_LENGTH - DMA1_Channel3->CNDTR;
 
-	// Disable the DMA channel
-	DMA1_Channel3->CCR &= ~DMA_CCR_EN;
-	BMS_UART->RQR |= 0x08; //
-	BMS_UART->ICR = 0x10;  // clear the IDLE flag
-
-	mNewDataReady = 1;
-
-}*/
-
-
-
-
-
-
-void BMS1_UartTxCallback(void)
+void BMS1_UartRxCallback(uint16_t reclength)
 {
 	mNewDataReady = 1;
-	mRecLength = 1;
-	//ProcessMessage();
+	mRecLength = reclength;
 }

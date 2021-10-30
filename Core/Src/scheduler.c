@@ -12,6 +12,8 @@
 #include "BMS1.h"
 #include "watchdog.h"
 #include "AC.h"
+#include "MCAN.h"
+#include "COM.h"
 
 
 

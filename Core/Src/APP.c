@@ -45,8 +45,9 @@ void APP_Init(void)
   COM_Init(THIS_NODE);
   AC_Init();
   BMS1_Init(&huart3);
+  WDG_Init(3000);
 
-	WDG_Init(3000);
+
 
 	/*Assign pins for onboard UI  */
 	uihw.Led_Life.Pin = LED_Life_Pin;
@@ -99,7 +100,6 @@ void APP_Init(void)
 void APP_Start(void)
 {
 
-
 //	MCAN_Start();
 
 	UI_LED_R_SetMode(eUI_OFF);
@@ -112,7 +112,6 @@ void APP_Start(void)
 	HAL_GPIO_WritePin(REL2_GPIO_Port,REL2_Pin,GPIO_PIN_RESET);
 	HAL_Delay(1000);
 	HAL_GPIO_WritePin(REL3_GPIO_Port,REL3_Pin,GPIO_PIN_RESET);
-
 
 
 
@@ -193,7 +192,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	}
 	else if (huart->Instance == huart3.Instance)
 	{
-		BMS1_UartTxCallback();
+
+		BMS1_UartRxCallback(huart->RxXferSize - huart->RxXferCount);
 	}
 	else if (huart->Instance == huart2.Instance)
 	{
@@ -201,6 +201,20 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	}
 }
 
+// another HAL callback when using RecieveToIdleDMA method
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
+{
+	if (huart->Instance == huart3.Instance)
+	{
+
+		BMS1_UartRxCallback(Size);
+	}
+	else if (huart->Instance == huart2.Instance)
+	{
+		//BMS2_UartTxCallback();
+	}
+
+}
 
 
 

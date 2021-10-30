@@ -16,12 +16,12 @@
 #define BMS_DATA_LENGTH 58   // documantation says 58,
 #define DMA_REC_LENGTH 59 // maximal allowed length of DMA transfer
 
-__packed typedef struct{
+typedef struct{
 	uint16_t Voltage_mV;
 	int16_t Temp_C;
 }sCell;
 
-__packed typedef struct{
+typedef struct{
 	uint32_t Capacity_Wh;
 	uint32_t Vmin_mV;
 	uint32_t Vmax_mV;
@@ -49,7 +49,7 @@ void BMS1_Init(UART_HandleTypeDef* huart);
 void BMS1_Update_500ms(void);
 
 
-void BMS1_UartRxCallback(void);
+void BMS1_UartRxCallback(uint16_t reclength);
 
 
 
