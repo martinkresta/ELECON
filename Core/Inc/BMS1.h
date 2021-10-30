@@ -33,6 +33,7 @@ typedef struct{
 	uint32_t VoltageTotal_mV;
 	int32_t ChargingCurrent_mA;
 	int32_t DischargingCurrent_mA;
+	int32_t BatteryCurrent_mA;
 	uint32_t TodayCharging_Wh;
 	uint32_t TodayDischarging_Wh;
 	uint32_t Energystored_Wh;

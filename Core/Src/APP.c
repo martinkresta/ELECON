@@ -19,6 +19,7 @@
 #include "COM.h"
 #include "AC.h"
 #include "BMS1.h"
+#include "BMS2.h"
 
 
 //#include "watchdog.h"
@@ -45,6 +46,7 @@ void APP_Init(void)
   COM_Init(THIS_NODE);
   AC_Init();
   BMS1_Init(&huart3);
+  BMS2_Init(&huart2);
   WDG_Init(3000);
 
 
@@ -197,7 +199,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	}
 	else if (huart->Instance == huart2.Instance)
 	{
-		//BMS2_UartTxCallback();
+		BMS2_UartRxCallback(huart->RxXferSize - huart->RxXferCount);
 	}
 }
 
@@ -211,7 +213,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 	}
 	else if (huart->Instance == huart2.Instance)
 	{
-		//BMS2_UartTxCallback();
+		BMS2_UartRxCallback(Size);
 	}
 
 }

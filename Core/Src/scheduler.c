@@ -10,6 +10,7 @@
 #include "TEMP.h"
 #include "SCOM.h"
 #include "BMS1.h"
+#include "BMS2.h"
 #include "watchdog.h"
 #include "AC.h"
 #include "MCAN.h"
@@ -250,6 +251,7 @@ static void Timer_Task_500ms(void)
 {
 	//HAL_GPIO_TogglePin(LED_B_GPIO_Port,LED_B_Pin);
 	BMS1_Update_500ms();
+	BMS2_Update_500ms();
 
 }
 
