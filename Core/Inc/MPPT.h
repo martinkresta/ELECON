@@ -58,7 +58,7 @@
 #define MPPT_OFFREASON_CREDIT			0x05
 #define MPPT_OFFREASON_BMS				0x06
 
-#define MPPT_REG_MAX_CHARGING_CURRENT 		0xEDDF
+#define MPPT_REG_MAX_CHARGING_CURRENT 		0xEDF0
 #define MPPT_REG_TEMP									 		0xEDDB
 #define MPPT_REG_CHARGER_CURRENT			 		0xEDD7
 #define MPPT_REG_CHARGER_VOLTAGE			 		0xEDD5
@@ -70,17 +70,17 @@
 #define MPPT_REG_SOLAR_CURRENT						0xEDBD
 #define MPPT_REG_SOLAR_MAX_VOLTAGE				0xEDB8
 
-#define DMA_REC_LENGTH 50 // maximal allowed length of DMA transfer
+#define DMA_LENGTH 50 // maximal allowed length of DMA transfer
 
 
 typedef enum
 {
-	none,
-	u8,
-	u16,
-	u32,
-	s16,
-	s32
+	etnone,
+	etu8,
+	etu16,
+	etu32,
+	ets16,
+	ets32
 }eValType;
 
 typedef struct

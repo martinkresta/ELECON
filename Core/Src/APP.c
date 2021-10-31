@@ -48,7 +48,7 @@ void APP_Init(void)
   AC_Init();
   BMS1_Init(&huart3);
   BMS2_Init(&huart2);
-  MMPT_Init(&hlpuart1);
+  MPPT_Init(&hlpuart1);
   WDG_Init(3000);
 
 
