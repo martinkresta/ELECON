@@ -20,6 +20,7 @@
 #include "AC.h"
 #include "BMS1.h"
 #include "BMS2.h"
+#include "MPPT.h"
 
 
 //#include "watchdog.h"
@@ -47,6 +48,7 @@ void APP_Init(void)
   AC_Init();
   BMS1_Init(&huart3);
   BMS2_Init(&huart2);
+  MMPT_Init(&hlpuart1);
   WDG_Init(3000);
 
 
@@ -116,8 +118,6 @@ void APP_Start(void)
 	HAL_GPIO_WritePin(REL3_GPIO_Port,REL3_Pin,GPIO_PIN_RESET);
 
 
-
-
 	while (1)   // endless loop
 	{
 		Scheduler_Check_Flag();
@@ -183,6 +183,10 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 	{
 		SCOM_UartTxCallback();
 	}
+	else if (huart->Instance == hlpuart1.Instance)
+	{
+		MPPT_UartTxCallback();
+	}
 }
 
 
@@ -191,6 +195,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	if (huart->Instance == huart1.Instance)
 	{
 		SCOM_UartRxCallback();
+	}
+	else if (huart->Instance == hlpuart1.Instance)
+	{
+		MPPT_UartRxCallback(huart->RxXferSize - huart->RxXferCount);
 	}
 	else if (huart->Instance == huart3.Instance)
 	{
@@ -206,9 +214,12 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 // another HAL callback when using RecieveToIdleDMA method
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
-	if (huart->Instance == huart3.Instance)
+	if (huart->Instance == hlpuart1.Instance)
 	{
-
+		MPPT_UartRxCallback(Size);
+	}
+	else if (huart->Instance == huart3.Instance)
+	{
 		BMS1_UartRxCallback(Size);
 	}
 	else if (huart->Instance == huart2.Instance)
