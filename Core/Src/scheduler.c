@@ -4,6 +4,7 @@
 // Project: Robodof
 
 
+#include <SHUNT.h>
 #include "UI.h"
 #include "scheduler.h"
 #include "OW.h"
@@ -228,6 +229,7 @@ static void Timer_Task_100ms(void)
 
 	TEMP_Update100ms();
 	MPPT_Update_100ms();
+	SHUNT_Update_100ms();
 //	ADC_StartConversion();
 }
 

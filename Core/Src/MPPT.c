@@ -38,6 +38,7 @@ void MPPT_Init(UART_HandleTypeDef* huart)
 	uint32_t UartError;
 	mNewDataReady = 0;
 	mRecLength = 0;
+	mScanIndex = 0;
 	mMpptUart = huart;
 
 	mNumOfScannedRegisters = 0;
@@ -82,6 +83,7 @@ void MPPT_Update_100ms(void)
 	HAL_StatusTypeDef UartRetval;
 	uint32_t UartError;
 	sTxMsg txMsg;
+	txMsg.cmd = MPPT_CMD_GET;
 	static uint8_t validflag = 0;
 
 	if (mNewDataReady)
@@ -101,8 +103,13 @@ void MPPT_Update_100ms(void)
 
 	// Send variable GET command
 
-	txMsg.cmd = MPPT_CMD_GET;
-	txMsg.reg = MPPT_REG_MAX_CHARGING_CURRENT;
+
+
+	txMsg.reg = mScanRegisters[mScanIndex++];
+	if (mScanIndex >= mNumOfScannedRegisters)
+	{
+		mScanIndex = 0;
+	}
 	SendMessage(&txMsg);
 }
 

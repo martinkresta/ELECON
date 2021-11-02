@@ -7,6 +7,7 @@
  *
  */
 
+#include <SHUNT.h>
 #include "RTC.h"
 #include "UI.h"
 #include "main.h"
@@ -50,6 +51,7 @@ void APP_Init(void)
   BMS2_Init(&huart2);
   MPPT_Init(&hlpuart1);
   WDG_Init(3000);
+  SHUNT_Init(&hspi1);
 
 
 
