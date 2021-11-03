@@ -119,6 +119,7 @@ void APP_Start(void)
 	HAL_Delay(1000);
 	HAL_GPIO_WritePin(REL3_GPIO_Port,REL3_Pin,GPIO_PIN_RESET);
 
+	MCAN_Start();
 
 	while (1)   // endless loop
 	{
@@ -126,11 +127,11 @@ void APP_Start(void)
 
 		// Process received COM messages
 
-/*		s_CanRxMsg rmsg;
+		s_CanRxMsg rmsg;
 		while(1 == COM_GetRxMessage(&rmsg))  // process all messages in buffer
 		{
 				ProcessMessage(&rmsg);
-		}*/
+		}
 
 	}
 }
