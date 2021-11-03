@@ -580,15 +580,15 @@ static void MX_SPI1_Init(void)
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
   hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.CLKPhase = SPI_PHASE_2EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
   hspi1.Init.CRCPolynomial = 7;
   hspi1.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
-  hspi1.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
+  hspi1.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
   if (HAL_SPI_Init(&hspi1) != HAL_OK)
   {
     Error_Handler();
@@ -696,18 +696,18 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, BCKP_ENA_Pin|LATCH_REL_OFF_Pin|OW1_Pin|LED_Life_Pin
-                          |LED_R_Pin|LED_G_Pin|SHUNT2_CS_Pin|SHUNT2_RST_Pin, GPIO_PIN_RESET);
+                          |LED_R_Pin|LED_G_Pin|SHUNT1_CS_Pin|SHUNT1_RST_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, LATCH_REL_ON_Pin|OUT4_Pin|OUT3_Pin|OUT2_Pin
                           |OUT1_Pin|REL3_Pin|REL2_Pin|REL1_Pin
-                          |SHUNT1_RST_Pin|BUZZ_Pin, GPIO_PIN_RESET);
+                          |SHUNT2_RST_Pin|BUZZ_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LED_B_GPIO_Port, LED_B_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(SHUNT1_CS_GPIO_Port, SHUNT1_CS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(SHUNT2_CS_GPIO_Port, SHUNT2_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(CHARGE_ENA_GPIO_Port, CHARGE_ENA_Pin, GPIO_PIN_RESET);
@@ -719,9 +719,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : BCKP_ENA_Pin LATCH_REL_OFF_Pin LED_Life_Pin LED_R_Pin
-                           LED_G_Pin SHUNT2_CS_Pin SHUNT2_RST_Pin */
+                           LED_G_Pin SHUNT1_CS_Pin SHUNT1_RST_Pin */
   GPIO_InitStruct.Pin = BCKP_ENA_Pin|LATCH_REL_OFF_Pin|LED_Life_Pin|LED_R_Pin
-                          |LED_G_Pin|SHUNT2_CS_Pin|SHUNT2_RST_Pin;
+                          |LED_G_Pin|SHUNT1_CS_Pin|SHUNT1_RST_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -747,10 +747,10 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pins : LATCH_REL_ON_Pin OUT4_Pin OUT3_Pin OUT2_Pin
                            OUT1_Pin REL3_Pin REL2_Pin REL1_Pin
-                           SHUNT1_RST_Pin BUZZ_Pin */
+                           SHUNT2_RST_Pin BUZZ_Pin */
   GPIO_InitStruct.Pin = LATCH_REL_ON_Pin|OUT4_Pin|OUT3_Pin|OUT2_Pin
                           |OUT1_Pin|REL3_Pin|REL2_Pin|REL1_Pin
-                          |SHUNT1_RST_Pin|BUZZ_Pin;
+                          |SHUNT2_RST_Pin|BUZZ_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -770,12 +770,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED_B_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : SHUNT1_CS_Pin */
-  GPIO_InitStruct.Pin = SHUNT1_CS_Pin;
+  /*Configure GPIO pin : SHUNT2_CS_Pin */
+  GPIO_InitStruct.Pin = SHUNT2_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(SHUNT1_CS_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(SHUNT2_CS_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : CHARGE_ENA_Pin */
   GPIO_InitStruct.Pin = CHARGE_ENA_Pin;
