@@ -26,7 +26,7 @@ static uint8_t mNumOfMotors;
 static SPI_HandleTypeDef* mSpi;
 static uint8_t mSlaveHbCnt;
 static uint8_t mSpiBusy;
-static int64_t mRawADC;
+static int32_t mRawADC;
 static int32_t mIbat_mA;
 
 static uint8_t mActiveSpiSlave;  // id of the slave which is just now selected for communication
@@ -88,18 +88,24 @@ static uint8_t SpiTransfer(uint8_t length, uint8_t* recdata);
 	// process the last readout value
 	 if(IsChecksumValid())
 	 {
+
 		 mRawADC = 0;
 		 mRawADC |= (mAdcData[0] & 0x7F) << 16;
 		 mRawADC |= mAdcData[1] << 8;
 		 mRawADC |= mAdcData[2];
-		 if (mAdcData[0] & 0x80) // sign bit
+
+		 if (mAdcData[0] & 0x80) // sign bit => negative value
 		 {
-			 mRawADC *= -1;
+			 mRawADC |= (0x1FF << 23);
+		 }
+		 else // positive value
+		 {
+
 		 }
 		 // Rshunt = 250uOhm   1A = 250uV
 		 // OP GAIN = 50       1A = 12,5mV    200A = 2,5V
 		 // V REF = 2.5V      ADC 23bit   2^23 = 8 388 608       LSB = 200/8388608 = 0,0238mA
-		 mIbat_mA = (mRawADC * 200) / 8388608;
+		 mIbat_mA = (((int64_t)mRawADC) * 200000) / 8388608;
 
 		 VAR_SetVariable(VAR_SHUNT_CURRENT_A100, (int16_t)(mIbat_mA/10),1);
 	 }
@@ -143,9 +149,16 @@ static uint8_t SpiTransfer(uint8_t length, uint8_t* recdata)
 	// activate chipselect
 	HAL_GPIO_WritePin(SHUNT1_CS_GPIO_Port, SHUNT1_CS_Pin, GPIO_PIN_RESET);
 	// wait unitl MISO is low (when MISO is high, data are not valid)
-	while (GPIO_PIN_SET == HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_4)) {}
+	if (GPIO_PIN_RESET == HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_4))
+	{
 	// do the transfer
-	HAL_SPI_TransmitReceive_DMA(mSpi, mTxData, recdata, length);
+		HAL_SPI_TransmitReceive_DMA(mSpi, mTxData, recdata, length);
+	}
+	else
+	{
+		HAL_Delay(1);
+		HAL_SPI_TransmitReceive_DMA(mSpi, mTxData, recdata, length);
+	}
 	// chipselect will be deactived in DMA TXRX complete callback
 	return SPI_OK;
 }

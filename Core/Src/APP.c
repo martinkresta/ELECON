@@ -119,7 +119,7 @@ void APP_Start(void)
 	HAL_Delay(1000);
 	HAL_GPIO_WritePin(REL3_GPIO_Port,REL3_Pin,GPIO_PIN_RESET);
 
-	MCAN_Start();
+//	MCAN_Start();
 
 	while (1)   // endless loop
 	{
