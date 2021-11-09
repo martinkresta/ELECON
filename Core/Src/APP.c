@@ -22,6 +22,7 @@
 #include "BMS1.h"
 #include "BMS2.h"
 #include "MPPT.h"
+#include "ELECON.h"
 
 
 //#include "watchdog.h"
@@ -52,6 +53,7 @@ void APP_Init(void)
   MPPT_Init(&hlpuart1);
   WDG_Init(3000);
   SHUNT_Init(&hspi1);
+  ELC_Init();
 
 
 
@@ -106,20 +108,16 @@ void APP_Init(void)
 void APP_Start(void)
 {
 
-//	MCAN_Start();
-
 	UI_LED_R_SetMode(eUI_OFF);
 	UI_LED_G_SetMode(eUI_OFF);
 	UI_LED_B_SetMode(eUI_OFF);
 	UI_Buzzer_SetMode(eUI_OFF);
 
 	HAL_GPIO_WritePin(REL1_GPIO_Port,REL1_Pin,GPIO_PIN_RESET);
-	HAL_Delay(1000);
 	HAL_GPIO_WritePin(REL2_GPIO_Port,REL2_Pin,GPIO_PIN_RESET);
-	HAL_Delay(1000);
 	HAL_GPIO_WritePin(REL3_GPIO_Port,REL3_Pin,GPIO_PIN_RESET);
 
-//	MCAN_Start();
+	MCAN_Start();
 
 	while (1)   // endless loop
 	{

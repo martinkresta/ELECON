@@ -170,6 +170,7 @@ void DecodeRegisterValue(uint16_t reg , uint8_t* value, uint8_t* sum)
 			if (validate16(u16,value+4,sum))
 			{
 				VAR_SetVariable(VAR_MPPT_BAT_CURRENT_A10, u16, 1);
+				VAR_SetVariable(VAR_CHARGING_A10, u16, 1);
 			}
 			break;
 		case MPPT_REG_CHARGER_VOLTAGE:  //  u16   0.01 V

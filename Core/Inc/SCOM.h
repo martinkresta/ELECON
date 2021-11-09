@@ -51,7 +51,7 @@
 
 
 #define PC_HB_TIMEOUT			3000
-#define NS_SEND_PERIOD		1000
+#define NS_SEND_PERIOD		5000
 
 void SCOM_Init(UART_HandleTypeDef* uart);
 void SCOM_Update_10ms(void);

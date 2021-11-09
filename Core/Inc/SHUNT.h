@@ -45,11 +45,13 @@
 #define  ADC_REG_FSC2							0x08
 
 
+#define  SHUNT_I_FILTER_LENGTH		10
 
  // Init the module and pass handle to used SPI (preconfigured by MX)
 
 void SHUNT_Init(SPI_HandleTypeDef* hspi);
 void SHUNT_Update_100ms(void);
+int32_t SHUNT_GetIbat_mA(void);
 
 
 

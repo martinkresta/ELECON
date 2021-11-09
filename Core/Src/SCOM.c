@@ -68,7 +68,8 @@ void SCOM_Update_10ms(void)
 	}
 
 
-	if (mPcConnected)  // send variables only if PC is connected
+	//if (mPcConnected)  // send variables only if PC is connected
+	if (1)
 	{
 		int i;
 
