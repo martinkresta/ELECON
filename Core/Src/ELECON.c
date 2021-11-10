@@ -88,3 +88,11 @@ void ELC_Update_1s(void)
 
 
 }
+
+
+void ELC_MidnightNow(void)
+{
+	// Reset counters at midnight
+	mTodayCons_Ws = 0;
+
+}

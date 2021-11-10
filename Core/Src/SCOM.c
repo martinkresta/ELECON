@@ -10,6 +10,7 @@
 #include "main.h"
 #include "SCOM.h"
 #include "VARS.h"
+#include "circbuf.h"
 
 
 typedef struct
@@ -23,9 +24,11 @@ typedef struct
 
 
 
-uint8_t mRxBuffer[COM_BUFLEN];
-uint8_t mTxBuffer[COM_BUFLEN];
+uint8_t mRxBuffer[COM_MSGLEN];
+//uint8_t mTxBuffer[COM_MSGLEN];
 uint8_t mRxLength, mNewDataReady, mTxBusy;
+
+CB_handle mTxMsgBuffer;
 
 UART_HandleTypeDef* ComUart;
 sScanVariable mScanList[NUM_OF_SCAN_VARS];
@@ -38,7 +41,7 @@ uint16_t mNsSendTimer;  // timer for sending network status
 static void UpdateScanList(uint16_t varId, uint16_t period);
 static void SendVariable(uint16_t id);
 static void InitPcScanList(void);
-static uint8_t Send(void);
+static uint8_t Send(s_ScomTxMsg msg);
 static void ProcessMessage(void);
 
 void SCOM_Init(UART_HandleTypeDef* uart)
@@ -50,6 +53,12 @@ void SCOM_Init(UART_HandleTypeDef* uart)
 	mTxBusy = 0;
 	mPcConnected = 0;
 	InitPcScanList();
+
+	mTxMsgBuffer = CB_Create(sizeof(s_ScomTxMsg),SCOM_TX_MSG_BUFLEN);
+	if (mTxMsgBuffer == NULL)
+	{
+		// TBD error
+	}
 
 	// enable receiver
 	HAL_UART_Receive_DMA(ComUart, mRxBuffer, 10);
@@ -103,6 +112,8 @@ void SCOM_Update_10ms(void)
 			}
 		}
 	}
+
+	SCOM_Transmit();  // transmit physically;
 }
 
 /* private methods */
@@ -118,19 +129,11 @@ static void InitPcScanList(void)
 }
 
 //returns 0 when OK, 1 if transceiver is busy
-static uint8_t Send(void)
+static uint8_t Send(s_ScomTxMsg msg)
 {
 
-	if (mTxBusy == 1)  // check if transciever is ready
-	{
-		return 1; // error: Tx Busy
-	}
-
-	mTxBusy = 1;
-
-	HAL_UART_Transmit_DMA(ComUart, mTxBuffer, 10);
-
-	return 0;
+	// instert to Tx buffer
+	CB_Put(mTxMsgBuffer,(uint8_t*) &msg);
 }
 
 static void UpdateScanList(uint16_t varId, uint16_t period)
@@ -175,17 +178,20 @@ static void SendVariable(uint16_t id)
 {
 	uint16_t invalid = 0;
 	uint16_t validflag = 0;
+	s_ScomTxMsg msg;
 	int16_t tmp = VAR_GetVariable(id, &invalid);
 	validflag = (invalid == INVALID_FLAG ? 0 : 1);
-	mTxBuffer[0] = CMD_TM_VAR_VALUE >> 8;
-	mTxBuffer[1] = CMD_TM_VAR_VALUE & 0xFF;
-	mTxBuffer[2] = id >> 8;
-	mTxBuffer[3] = id  & 0xFF;
-	mTxBuffer[4] = tmp >> 8;
-	mTxBuffer[5] = tmp & 0xFF;
-	mTxBuffer[6] = validflag >> 8;
-	mTxBuffer[7] = validflag & 0xFF;
-	Send();
+	msg.data[0] = CMD_TM_VAR_VALUE >> 8;
+	msg.data[1] = CMD_TM_VAR_VALUE & 0xFF;
+	msg.data[2] = id >> 8;
+	msg.data[3] = id  & 0xFF;
+	msg.data[4] = tmp >> 8;
+	msg.data[5] = tmp & 0xFF;
+	msg.data[6] = validflag >> 8;
+	msg.data[7] = validflag & 0xFF;
+	msg.data[8] = 0;
+	msg.data[9] = 0;
+	Send(msg);
 }
 
 static void ProcessMessage(void)
@@ -223,10 +229,30 @@ static void ProcessMessage(void)
 	return;
 }
 
+
+
+// function to be called periodically at a rate of transmitting SCOM messages. (for example every 5 ms)
+// One SCOM message is is sent if TX buffer is not empty
+void SCOM_Transmit(void)
+{
+	s_ScomTxMsg TxMsg;
+
+
+	if  (0 == CB_Probe(mTxMsgBuffer,(uint8_t*)&TxMsg) && (mTxBusy == 0))  // fetch the message from the buffer
+	{
+		if (HAL_OK == HAL_UART_Transmit_DMA(ComUart, TxMsg.data, COM_MSGLEN))  // transmit the message
+		{
+			CB_Remove(mTxMsgBuffer);  // remove the message from the buffer only if transmission was succesfull
+		}
+	}
+}
+
+
 /* Interrupt callbacks */
 void SCOM_UartTxCallback(void)
 {
 	mTxBusy = 0;
+	SCOM_Transmit();   // automatically transmit next messages
 }
 
 

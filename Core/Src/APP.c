@@ -134,6 +134,23 @@ void APP_Start(void)
 	}
 }
 
+void APP_Update_1s(void)
+{
+	static uint8_t dayNumber = 0;
+	uint8_t newDayNumber = 0;
+	newDayNumber = RTC_GetTime().Day;
+	if (dayNumber != newDayNumber)
+	{
+		dayNumber = newDayNumber;
+
+		ELC_MidnightNow();
+	}
+
+	// check midnight
+}
+
+
+
 
 /*Private methods*/
 

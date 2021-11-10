@@ -19,6 +19,8 @@ void ELC_Init(void);
 
 void ELC_Update_1s(void);
 
+void ELC_MidnightNow(void);
+
 
 
 #endif /* INC_ELECON_H_ */

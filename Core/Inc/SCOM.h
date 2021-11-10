@@ -14,7 +14,9 @@
 
 #define SCOM_BAUDRATE 57600
 
-#define COM_BUFLEN	10
+#define COM_MSGLEN	10
+
+#define SCOM_TX_MSG_BUFLEN	255
 
 #define NUM_OF_SCAN_VARS	50
 
@@ -53,8 +55,18 @@
 #define PC_HB_TIMEOUT			3000
 #define NS_SEND_PERIOD		5000
 
+
+typedef struct
+{
+	uint8_t data[10];
+}s_ScomTxMsg;
+
+
+
 void SCOM_Init(UART_HandleTypeDef* uart);
 void SCOM_Update_10ms(void);
+
+void SCOM_Transmit(void);
 
 void SCOM_UartTxCallback();
 void SCOM_UartRxCallback();

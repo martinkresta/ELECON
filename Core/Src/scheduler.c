@@ -272,6 +272,7 @@ static void Timer_Task_1s(void)
 	WDG_Refresh();
 	AC_Update_1s();
 	ELC_Update_1s();
+	APP_Update_1s();
 	//LED_Error_SetMode(eLED_BLINK_ONCE);
 	//	OW_Read(0);
 	//		OW_ConvertAll(0);
