@@ -29,6 +29,7 @@ uint8_t mRxBuffer[COM_MSGLEN];
 uint8_t mRxLength, mNewDataReady, mTxBusy;
 
 CB_handle mTxMsgBuffer;
+s_ScomTxMsg mTxMsg;
 
 UART_HandleTypeDef* ComUart;
 sScanVariable mScanList[NUM_OF_SCAN_VARS];
@@ -122,10 +123,146 @@ void SCOM_Update_10ms(void)
 // Compile-time initialization of list of variables periodically sent toi the PC app
 static void InitPcScanList(void)
 {
+
+	UpdateScanList(VAR_BAT_SOC, 1000);
+	UpdateScanList(VAR_BAT_VOLTAGE_V10, 1000);
+	UpdateScanList(VAR_LOAD_A10, 1000);
+	UpdateScanList(VAR_CHARGING_A10, 1000);
+	UpdateScanList(VAR_BAT_CURRENT_A10, 1000);
+	UpdateScanList(VAR_CONS_TODAY_WH, 3000);
+	UpdateScanList(VAR_BAT_ENERGY_WH, 3000);
+	UpdateScanList(VAR_LOAD_W, 1000);
+
+
+	UpdateScanList(VAR_BMS1_SOC, 1000);
+	UpdateScanList(VAR_BMS1_CURRENT_A10, 3000);
+	UpdateScanList(VAR_BMS1_VOLTAGE_V10, 3000);
+	UpdateScanList(VAR_BMS1_ENERGY_STORED_WH, 3000);
+	UpdateScanList(VAR_BMS1_TODAY_ENERGY_WH, 3000);
+
+	UpdateScanList(VAR_BMS2_SOC, 1000);
+	UpdateScanList(VAR_BMS2_CURRENT_A10, 3000);
+	UpdateScanList(VAR_BMS2_VOLTAGE_V10, 3000);
+	UpdateScanList(VAR_BMS2_ENERGY_STORED_WH, 3000);
+	UpdateScanList(VAR_BMS2_TODAY_ENERGY_WH, 3000);
+
+	UpdateScanList(VAR_MPPT_BAT_CURRENT_A10, 1000);
+	UpdateScanList(VAR_MPPT_BAT_VOLTAGE_V100, 1000);
+	UpdateScanList(VAR_MPPT_YIELD_TODAY_10WH, 3000);
+	UpdateScanList(VAR_MPPT_MAX_TODAY_W, 3000);
+	UpdateScanList(VAR_MPPT_SOLAR_POWER_W, 1000);
+	UpdateScanList(VAR_MPPT_SOLAR_VOLTAGE_V100, 1000);
+	UpdateScanList(VAR_MPPT_SOLAR_CURRENT_A10, 3000);
+	UpdateScanList(VAR_MPPT_SOLAR_MAX_VOLTAGE_V100, 3000);
+	UpdateScanList(VAR_MPPT_MAX_BAT_CURRENT_A10, 3000);
+
+	UpdateScanList(VAR_EL_HEATER_STATUS, 3000);
+	UpdateScanList(VAR_EL_HEATER_POWER, 3000);
+	UpdateScanList(VAR_EL_HEATER_CURRENT, 3000);
+	UpdateScanList(VAR_EL_HEATER_CONS, 3000);
+
+	UpdateScanList(VAR_FLOW_COLD, 3000);
+	UpdateScanList(VAR_FLOW_HOT, 3000);
+	UpdateScanList(VAR_CONS_COLD, 3000);
+	UpdateScanList(VAR_CONS_HOT, 3000);
+
+
+	UpdateScanList(VAR_TEMP_BOILER, 3000);
+	UpdateScanList(VAR_TEMP_BOILER_IN, 3000);
+	UpdateScanList(VAR_TEMP_BOILER_OUT, 3000);
+	UpdateScanList(VAR_TEMP_TANK_IN_H, 3000);
+	UpdateScanList(VAR_TEMP_TANK_OUT_H, 3000);
+	UpdateScanList(VAR_TEMP_TANK_1, 3000);
+	UpdateScanList(VAR_TEMP_TANK_2, 3000);
+	UpdateScanList(VAR_TEMP_TANK_3, 3000);
+	UpdateScanList(VAR_TEMP_TANK_4, 3000);
+	UpdateScanList(VAR_TEMP_TANK_5, 3000);
+	UpdateScanList(VAR_TEMP_TANK_6, 3000);
+	UpdateScanList(VAR_TEMP_WALL_IN, 3000);
+	UpdateScanList(VAR_TEMP_WALL_OUT, 3000);
+	UpdateScanList(VAR_TEMP_BOILER_EXHAUST, 3000);
+	UpdateScanList(VAR_TEMP_RAD_H, 3000);
+	UpdateScanList(VAR_TEMP_RAD_C, 3000);
+	UpdateScanList(VAR_TEMP_TANK_IN_C, 3000);
+	UpdateScanList(VAR_TEMP_TANK_OUT_C, 3000);
+
+
+	UpdateScanList(VAR_TEMP_TECHM_BOARD, 3000);
+	UpdateScanList(VAR_TEMP_IOBOARD_D, 3000);
+	UpdateScanList(VAR_TEMP_IOBOARD_U, 3000);
 	UpdateScanList(VAR_TEMP_ELECON_BOARD, 3000);
+	UpdateScanList(VAR_TEMP_DOWNSTAIRS, 3000);
 	UpdateScanList(VAR_TEMP_OFFICE, 3000);
 	UpdateScanList(VAR_TEMP_KIDROOM, 3000);
 	UpdateScanList(VAR_TEMP_OUTSIDE, 3000);
+
+
+	UpdateScanList(VAR_BMS1_CELL1_MV, 3000);
+	UpdateScanList(VAR_BMS1_CELL2_MV, 3000);
+	UpdateScanList(VAR_BMS1_CELL3_MV, 3000);
+	UpdateScanList(VAR_BMS1_CELL4_MV, 3000);
+	UpdateScanList(VAR_BMS1_CELL5_MV, 3000);
+	UpdateScanList(VAR_BMS1_CELL6_MV, 3000);
+	UpdateScanList(VAR_BMS1_CELL7_MV, 3000);
+	UpdateScanList(VAR_BMS1_CELL8_MV, 3000);
+	UpdateScanList(VAR_BMS1_CELL9_MV, 3000);
+	UpdateScanList(VAR_BMS1_CELL10_MV, 3000);
+	UpdateScanList(VAR_BMS1_CELL11_MV, 3000);
+	UpdateScanList(VAR_BMS1_CELL12_MV, 3000);
+	UpdateScanList(VAR_BMS1_CELL13_MV, 3000);
+	UpdateScanList(VAR_BMS1_CELL14_MV, 3000);
+	UpdateScanList(VAR_BMS1_CELL15_MV, 3000);
+	UpdateScanList(VAR_BMS1_CELL16_MV, 3000);
+	UpdateScanList(VAR_BMS1_CELL1_C, 3000);
+	UpdateScanList(VAR_BMS1_CELL2_C, 3000);
+	UpdateScanList(VAR_BMS1_CELL3_C, 3000);
+	UpdateScanList(VAR_BMS1_CELL4_C, 3000);
+	UpdateScanList(VAR_BMS1_CELL5_C, 3000);
+	UpdateScanList(VAR_BMS1_CELL6_C, 3000);
+	UpdateScanList(VAR_BMS1_CELL7_C, 3000);
+	UpdateScanList(VAR_BMS1_CELL8_C, 3000);
+	UpdateScanList(VAR_BMS1_CELL9_C, 3000);
+	UpdateScanList(VAR_BMS1_CELL10_C, 3000);
+	UpdateScanList(VAR_BMS1_CELL11_C, 3000);
+	UpdateScanList(VAR_BMS1_CELL12_C, 3000);
+	UpdateScanList(VAR_BMS1_CELL13_C, 3000);
+	UpdateScanList(VAR_BMS1_CELL14_C, 3000);
+	UpdateScanList(VAR_BMS1_CELL15_C, 3000);
+	UpdateScanList(VAR_BMS1_CELL16_C, 3000);
+
+	UpdateScanList(VAR_BMS2_CELL1_MV, 3000);
+	UpdateScanList(VAR_BMS2_CELL2_MV, 3000);
+	UpdateScanList(VAR_BMS2_CELL3_MV, 3000);
+	UpdateScanList(VAR_BMS2_CELL4_MV, 3000);
+	UpdateScanList(VAR_BMS2_CELL5_MV, 3000);
+	UpdateScanList(VAR_BMS2_CELL6_MV, 3000);
+	UpdateScanList(VAR_BMS2_CELL7_MV, 3000);
+	UpdateScanList(VAR_BMS2_CELL8_MV, 3000);
+	UpdateScanList(VAR_BMS2_CELL9_MV, 3000);
+	UpdateScanList(VAR_BMS2_CELL10_MV, 3000);
+	UpdateScanList(VAR_BMS2_CELL11_MV, 3000);
+	UpdateScanList(VAR_BMS2_CELL12_MV, 3000);
+	UpdateScanList(VAR_BMS2_CELL13_MV, 3000);
+	UpdateScanList(VAR_BMS2_CELL14_MV, 3000);
+	UpdateScanList(VAR_BMS2_CELL15_MV, 3000);
+	UpdateScanList(VAR_BMS2_CELL16_MV, 3000);
+	UpdateScanList(VAR_BMS2_CELL1_C, 3000);
+	UpdateScanList(VAR_BMS2_CELL2_C, 3000);
+	UpdateScanList(VAR_BMS2_CELL3_C, 3000);
+	UpdateScanList(VAR_BMS2_CELL4_C, 3000);
+	UpdateScanList(VAR_BMS2_CELL5_C, 3000);
+	UpdateScanList(VAR_BMS2_CELL6_C, 3000);
+	UpdateScanList(VAR_BMS2_CELL7_C, 3000);
+	UpdateScanList(VAR_BMS2_CELL8_C, 3000);
+	UpdateScanList(VAR_BMS2_CELL9_C, 3000);
+	UpdateScanList(VAR_BMS2_CELL10_C, 3000);
+	UpdateScanList(VAR_BMS2_CELL11_C, 3000);
+	UpdateScanList(VAR_BMS2_CELL12_C, 3000);
+	UpdateScanList(VAR_BMS2_CELL13_C, 3000);
+	UpdateScanList(VAR_BMS2_CELL14_C, 3000);
+	UpdateScanList(VAR_BMS2_CELL15_C, 3000);
+	UpdateScanList(VAR_BMS2_CELL16_C, 3000);
+
 }
 
 //returns 0 when OK, 1 if transceiver is busy
@@ -181,16 +318,17 @@ static void SendVariable(uint16_t id)
 	s_ScomTxMsg msg;
 	int16_t tmp = VAR_GetVariable(id, &invalid);
 	validflag = (invalid == INVALID_FLAG ? 0 : 1);
-	msg.data[0] = CMD_TM_VAR_VALUE >> 8;
-	msg.data[1] = CMD_TM_VAR_VALUE & 0xFF;
-	msg.data[2] = id >> 8;
-	msg.data[3] = id  & 0xFF;
-	msg.data[4] = tmp >> 8;
-	msg.data[5] = tmp & 0xFF;
-	msg.data[6] = validflag >> 8;
-	msg.data[7] = validflag & 0xFF;
-	msg.data[8] = 0;
-	msg.data[9] = 0;
+
+	msg.data[0] = MSG_START_B1;     // message START
+	msg.data[1] = MSG_START_B2;
+	msg.data[2] = CMD_TM_VAR_VALUE >> 8;
+	msg.data[3] = CMD_TM_VAR_VALUE & 0xFF;
+	msg.data[4] = id >> 8;
+	msg.data[5] = id  & 0xFF;
+	msg.data[6] = tmp >> 8;
+	msg.data[7] = tmp & 0xFF;
+	msg.data[8] = validflag >> 8;
+	msg.data[9] = validflag & 0xFF;
 	Send(msg);
 }
 
@@ -198,6 +336,7 @@ static void ProcessMessage(void)
 {
 		uint16_t varId, sendPeriod;
 		uint16_t id = (mRxBuffer[0]<<8) | mRxBuffer[1];
+		uint32_t unixtime = 0;
 
 		uint16_t data1, data2, data3, data4;
 		data1 = (mRxBuffer[2]<<8) | mRxBuffer[3];
@@ -220,6 +359,20 @@ static void ProcessMessage(void)
 			case CMD_TM_SET_ELV:
 			//	DO_SetElv(data1);
 				break;
+			case CMD_RPI_RTC_SYNC:
+					// forward to can
+					mRxBuffer[6] = 0;
+					mRxBuffer[7] = 0;
+					mRxBuffer[8] = 0;
+					mRxBuffer[9] = 0;
+					COM_SendMessage(CMD_RPI_RTC_SYNC,&(mRxBuffer[2]),8);
+					// and set also the RTC here
+					unixtime |= mRxBuffer[0] << 24;
+					unixtime |= mRxBuffer[1] << 16;
+					unixtime |= mRxBuffer[2] << 8;
+					unixtime |= mRxBuffer[3];
+					RTC_SetUnixTime(unixtime);
+					break;
 			case CMD_SET_VAR_VALUE:
 				VAR_SetVariable(data1 & 0x7FFF, data2, ((data1 & 0x8000)? 0 : 1));
 				break;
@@ -235,12 +388,9 @@ static void ProcessMessage(void)
 // One SCOM message is is sent if TX buffer is not empty
 void SCOM_Transmit(void)
 {
-	s_ScomTxMsg TxMsg;
-
-
-	if  (0 == CB_Probe(mTxMsgBuffer,(uint8_t*)&TxMsg) && (mTxBusy == 0))  // fetch the message from the buffer
+	if  (0 == CB_Probe(mTxMsgBuffer,(uint8_t*)&mTxMsg) && (mTxBusy == 0))  // fetch the message from the buffer
 	{
-		if (HAL_OK == HAL_UART_Transmit_DMA(ComUart, TxMsg.data, COM_MSGLEN))  // transmit the message
+		if (HAL_OK == HAL_UART_Transmit_DMA(ComUart, mTxMsg.data, COM_MSGLEN))  // transmit the message
 		{
 			CB_Remove(mTxMsgBuffer);  // remove the message from the buffer only if transmission was succesfull
 		}

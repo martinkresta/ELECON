@@ -97,11 +97,16 @@ void APP_Init(void)
 
 	/* Configure CAN streamed variables */
 
+	COM_AddStreamedVariable(VAR_BAT_SOC, 1000);  // SOC
+	COM_AddStreamedVariable(VAR_BAT_VOLTAGE_V10, 1000);  // VBAT
+	COM_AddStreamedVariable(VAR_CHARGING_A10, 1000);  // Charging amps
+	COM_AddStreamedVariable(VAR_LOAD_A10, 1000);  // Load amps
+	COM_AddStreamedVariable(VAR_BAT_CURRENT_A10, 1000);  // Bat amps
+
 	COM_AddStreamedVariable(VAR_TEMP_ELECON_BOARD, 3000);
 	COM_AddStreamedVariable(VAR_TEMP_OFFICE, 3000);
 	COM_AddStreamedVariable(VAR_TEMP_KIDROOM, 3000);
 	COM_AddStreamedVariable(VAR_TEMP_OUTSIDE, 3000);
-
 
 }
 
@@ -144,6 +149,7 @@ void APP_Update_1s(void)
 		dayNumber = newDayNumber;
 
 		ELC_MidnightNow();
+		MPPT_MidnightNow();
 	}
 
 	// check midnight

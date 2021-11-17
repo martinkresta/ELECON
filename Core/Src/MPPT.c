@@ -103,8 +103,6 @@ void MPPT_Update_100ms(void)
 
 	// Send variable GET command
 
-
-
 	txMsg.reg = mScanRegisters[mScanIndex++];
 	if (mScanIndex >= mNumOfScannedRegisters)
 	{
@@ -114,6 +112,12 @@ void MPPT_Update_100ms(void)
 }
 
 
+void MPPT_MidnightNow(void)
+{
+	// reset todays yield and max power
+	VAR_SetVariable(VAR_MPPT_YIELD_TODAY_10WH, 0, 1);
+	VAR_SetVariable(VAR_MPPT_MAX_TODAY_W, 0, 1);
+}
 
 void DecodeMessage(void)
 {
@@ -153,6 +157,7 @@ void DecodeRegisterValue(uint16_t reg , uint8_t* value, uint8_t* sum)
 	int16_t s16;
 	uint32_t u32;
 	eValType type;
+	uint16_t invalid;
 	switch (reg)
 	{
 		case MPPT_REG_MAX_CHARGING_CURRENT:   // u16,  0.01 Amps
@@ -184,14 +189,20 @@ void DecodeRegisterValue(uint16_t reg , uint8_t* value, uint8_t* sum)
 			u16 = Hex2Uint(value, 4);
 			if (validate16(u16,value+4,sum))
 			{
-				VAR_SetVariable(VAR_MPPT_YIELD_TODAY_10WH, u16, 1);
+				if (u16 > 1)  // allow only values bigger than 1, because MPPT reset values already after sunset not at midnight
+				{
+					VAR_SetVariable(VAR_MPPT_YIELD_TODAY_10WH, u16, 1);
+				}
 			}
 			break;
 		case MPPT_REG_MAX_POWER_TODAY: // u16  W
 			u16 = Hex2Uint(value, 4);
 			if (validate16(u16,value+4,sum))
 			{
-				VAR_SetVariable(VAR_MPPT_MAX_TODAY_W, u16, 1);
+				if (u16 > 1) // allow only values bigger than 1, because MPPT reset values already after sunset not at midnight
+				{
+					VAR_SetVariable(VAR_MPPT_MAX_TODAY_W, u16, 1);
+				}
 			}
 			break;
 		case MPPT_REG_SOLAR_POWER	:  //  u32 0.01 W

@@ -108,6 +108,8 @@ void MPPT_Update_100ms(void);
 void MPPT_UartRxCallback(uint16_t reclength);
 void MPPT_UartTxCallback(void);
 
+void MPPT_MidnightNow(void);
+
 
 
 

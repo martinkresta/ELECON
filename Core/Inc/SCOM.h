@@ -18,7 +18,7 @@
 
 #define SCOM_TX_MSG_BUFLEN	255
 
-#define NUM_OF_SCAN_VARS	50
+#define NUM_OF_SCAN_VARS	180
 
 
 
@@ -41,8 +41,12 @@
 #define  CMD_TM_STATUS  					0x212
 #define  CMD_TM_VAR_VALUE  				0x221
 
-#define  CMD_RPI_VAR_VALUE  0x50
+#define  CMD_RPI_VAR_VALUE  			0x50
 #define  CMD_SET_VAR_VALUE 			 	0x120
+#define  CMD_RPI_RTC_SYNC  				0x51
+
+#define  MSG_START_B1							0x7F
+#define  MSG_START_B2							0xAA
 
 
 

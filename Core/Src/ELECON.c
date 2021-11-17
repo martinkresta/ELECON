@@ -18,12 +18,15 @@ uint8_t mBattFullFlag;
 int64_t mBattRemaining_mAs;  // miliamperseconds :-D
 int32_t mTodayCons_Ws;    // wattseconds
 uint8_t mChargingDisabledFlag;
+uint8_t mSOCInitialisedFlag;
+int32_t mBattEnergy_Wh;
 
 void ELC_Init(void)
 {
 	mSoc_pct100 = 5000;
 	mBattRemaining_mAs = BAT_EFF_CAPACITY_AH * AH2MAS / 2;
 	mChargingDisabledFlag = 0;
+	mSOCInitialisedFlag = 0;
 	mTodayCons_Ws = 0;
 }
 
@@ -39,8 +42,19 @@ void ELC_Update_1s(void)
 	int16_t socBms1 = 75;
 	int16_t socBms2 = VAR_GetVariable(VAR_BMS2_SOC, &invalid);
 
+
+
+
 	if (invalid == 0)  // continue only if valid inputs
 	{
+
+		if (mSOCInitialisedFlag == 0 &&  socBms2 > 0)
+		{
+			// after SW restart init the SOC value with the value of BMS2 SOC
+			mSOCInitialisedFlag = 1;
+			mSoc_pct100 = socBms2*100;
+			mBattRemaining_mAs = BAT_EFF_CAPACITY_AH * AH2MAS * mSoc_pct100 / 10000;
+		}
 
 		// Use the MPPT bat voltage as the battery voltage, and shunt curretn as battery current
 		VAR_SetVariable(VAR_BAT_VOLTAGE_V10,railVoltage_V10,1);
@@ -67,7 +81,12 @@ void ELC_Update_1s(void)
 
 		// calulate SOC
 		mSoc_pct100 = mBattRemaining_mAs / (BAT_EFF_CAPACITY_AH * AH2MAS / 10000);
+		mBattEnergy_Wh = (mBattRemaining_mAs * railVoltage_V10) / (AH2MAS * 10);
+
 		VAR_SetVariable(VAR_BAT_SOC,mSoc_pct100/100,1);
+
+		VAR_SetVariable(VAR_BAT_ENERGY_WH,mBattEnergy_Wh,1);
+
 
 
     // calculate load current and power
