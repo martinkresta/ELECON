@@ -50,6 +50,8 @@ void MPPT_Init(UART_HandleTypeDef* huart)
 	mScanRegisters[mNumOfScannedRegisters++] = MPPT_REG_SOLAR_VOLTAGE;
 	mScanRegisters[mNumOfScannedRegisters++] = MPPT_REG_SOLAR_CURRENT;
 	mScanRegisters[mNumOfScannedRegisters++] = MPPT_REG_SOLAR_MAX_VOLTAGE;
+	mScanRegisters[mNumOfScannedRegisters++] = MPPT_REG_MAX_CHARGING_CURRENT;
+	mScanRegisters[mNumOfScannedRegisters++] = MPPT_REG_TEMP;
 
 
 	// test message
@@ -168,7 +170,11 @@ void DecodeRegisterValue(uint16_t reg , uint8_t* value, uint8_t* sum)
 			}
 			break;
 		case MPPT_REG_TEMP:     //  s16    0.01 C
-			// TBD
+			u16 = Hex2Uint(value, 4);
+			if (validate16(u16,value+4,sum))
+			{
+				VAR_SetVariable(VAR_MPPT_TEMP_C, u16/100.0, 1);
+			}
 			break;
 		case MPPT_REG_CHARGER_CURRENT:  //  u16  0.1 A
 			u16 = Hex2Uint(value, 4);
@@ -189,7 +195,7 @@ void DecodeRegisterValue(uint16_t reg , uint8_t* value, uint8_t* sum)
 			u16 = Hex2Uint(value, 4);
 			if (validate16(u16,value+4,sum))
 			{
-				if (u16 > 1)  // allow only values bigger than 1, because MPPT reset values already after sunset not at midnight
+				if (u16 >= 1)  // allow only values bigger than 0, because MPPT reset values already after sunset not at midnight
 				{
 					VAR_SetVariable(VAR_MPPT_YIELD_TODAY_10WH, u16, 1);
 				}
@@ -199,7 +205,7 @@ void DecodeRegisterValue(uint16_t reg , uint8_t* value, uint8_t* sum)
 			u16 = Hex2Uint(value, 4);
 			if (validate16(u16,value+4,sum))
 			{
-				if (u16 > 1) // allow only values bigger than 1, because MPPT reset values already after sunset not at midnight
+				if (u16 >= 1) // allow only values bigger than 0, because MPPT reset values already after sunset not at midnight
 				{
 					VAR_SetVariable(VAR_MPPT_MAX_TODAY_W, u16, 1);
 				}
@@ -207,7 +213,7 @@ void DecodeRegisterValue(uint16_t reg , uint8_t* value, uint8_t* sum)
 			break;
 		case MPPT_REG_SOLAR_POWER	:  //  u32 0.01 W
 			u32 = Hex2Uint(value, 8);
-			if (validate16(u32,value+8,sum))
+			if (validate32(u32,value+8,sum))
 			{
 				VAR_SetVariable(VAR_MPPT_SOLAR_POWER_W, u32/100, 1);
 			}
@@ -227,7 +233,11 @@ void DecodeRegisterValue(uint16_t reg , uint8_t* value, uint8_t* sum)
 			}
 			break;
 		case MPPT_REG_SOLAR_MAX_VOLTAGE:  // u16 0.01 V
-			// TBD
+			u16 = Hex2Uint(value, 4);
+			if (validate16(u16,value+4,sum))
+			{
+				VAR_SetVariable(VAR_MPPT_SOLAR_MAX_VOLTAGE_V100, u16, 1);
+			}
 			break;
 		default:
 			 // not supported registers
@@ -257,8 +267,8 @@ uint8_t validate32(uint32_t val, uint8_t* checksum, uint8_t* sum)
 	*sum += (val && 0xFF00) >> 8;
 	*sum += (val && 0xFF0000) >> 16;
 	*sum += (val && 0xFF000000) >> 24;
-	*sum += *checksum;
-	if (*(checksum+1) == '\n'  && *sum == MPPT_CHECKSUM_RES)
+	*sum += Hex2Uint(checksum, 2);
+	if (*(checksum+2) == '\n'  && *sum == MPPT_CHECKSUM_RES)
 	{
 		return 1;
 	}

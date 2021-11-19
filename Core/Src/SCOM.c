@@ -155,6 +155,7 @@ static void InitPcScanList(void)
 	UpdateScanList(VAR_MPPT_SOLAR_CURRENT_A10, 3000);
 	UpdateScanList(VAR_MPPT_SOLAR_MAX_VOLTAGE_V100, 3000);
 	UpdateScanList(VAR_MPPT_MAX_BAT_CURRENT_A10, 3000);
+	UpdateScanList(VAR_MPPT_TEMP_C, 3000);
 
 	UpdateScanList(VAR_EL_HEATER_STATUS, 3000);
 	UpdateScanList(VAR_EL_HEATER_POWER, 3000);
@@ -367,10 +368,10 @@ static void ProcessMessage(void)
 					mRxBuffer[9] = 0;
 					COM_SendMessage(CMD_RPI_RTC_SYNC,&(mRxBuffer[2]),8);
 					// and set also the RTC here
-					unixtime |= mRxBuffer[0] << 24;
-					unixtime |= mRxBuffer[1] << 16;
-					unixtime |= mRxBuffer[2] << 8;
-					unixtime |= mRxBuffer[3];
+					unixtime |= mRxBuffer[2] << 24;
+					unixtime |= mRxBuffer[3] << 16;
+					unixtime |= mRxBuffer[4] << 8;
+					unixtime |= mRxBuffer[5];
 					RTC_SetUnixTime(unixtime);
 					break;
 			case CMD_SET_VAR_VALUE:

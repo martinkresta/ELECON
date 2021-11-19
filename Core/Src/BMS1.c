@@ -91,7 +91,7 @@ void BMS1_Update_500ms(void)
 
 	VAR_SetVariable(VAR_BMS1_VOLTAGE_V10, mLiveData.VoltageTotal_mV/100, validflag);
 	VAR_SetVariable(VAR_BMS1_SOC, mLiveData.SOC, validflag);
-	VAR_SetVariable(VAR_BMS1_CURRENT_A10, mLiveData.ChargingCurrent_mA/100, validflag);
+	VAR_SetVariable(VAR_BMS1_CURRENT_A10, mLiveData.BatteryCurrent_mA/100, validflag);
 	VAR_SetVariable(VAR_BMS1_ENERGY_STORED_WH, mLiveData.Energystored_Wh, validflag);
 	VAR_SetVariable(VAR_BMS1_TODAY_ENERGY_WH, mLiveData.TodayCharging_Wh, validflag);
 
