@@ -52,12 +52,10 @@ extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 extern DMA_HandleTypeDef hdma_usart1_rx;
 extern DMA_HandleTypeDef hdma_usart1_tx;
-
 extern RTC_HandleTypeDef hrtc;
-
 extern SPI_HandleTypeDef hspi1;
-
 extern TIM_HandleTypeDef htim6;
+extern TIM_HandleTypeDef htim2;
 
 /* USER CODE END ET */
 
@@ -70,6 +68,8 @@ extern TIM_HandleTypeDef htim6;
 /* USER CODE BEGIN EM */
 
 /* USER CODE END EM */
+
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);

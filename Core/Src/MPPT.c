@@ -49,8 +49,8 @@ void MPPT_Init(UART_HandleTypeDef* huart)
 	mScanRegisters[mNumOfScannedRegisters++] = MPPT_REG_SOLAR_POWER;
 	mScanRegisters[mNumOfScannedRegisters++] = MPPT_REG_SOLAR_VOLTAGE;
 	mScanRegisters[mNumOfScannedRegisters++] = MPPT_REG_SOLAR_CURRENT;
-	mScanRegisters[mNumOfScannedRegisters++] = MPPT_REG_SOLAR_MAX_VOLTAGE;
-	mScanRegisters[mNumOfScannedRegisters++] = MPPT_REG_MAX_CHARGING_CURRENT;
+//	mScanRegisters[mNumOfScannedRegisters++] = MPPT_REG_SOLAR_MAX_VOLTAGE;
+//	mScanRegisters[mNumOfScannedRegisters++] = MPPT_REG_MAX_CHARGING_CURRENT;
 	mScanRegisters[mNumOfScannedRegisters++] = MPPT_REG_TEMP;
 
 

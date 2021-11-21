@@ -23,6 +23,7 @@
 #include "BMS2.h"
 #include "MPPT.h"
 #include "ELECON.h"
+#include "pwrout.h"
 
 
 //#include "watchdog.h"
@@ -32,6 +33,7 @@
 s_CanRxMsg rmsg;
 
 static void ProcessMessage(s_CanRxMsg* msg);
+static void ExtLightControl(void);
 
 // public methods
 void APP_Init(void)
@@ -54,6 +56,7 @@ void APP_Init(void)
   WDG_Init(3000);
   SHUNT_Init(&hspi1);
   ELC_Init();
+  PWROUT_Init();
 
 
 
@@ -108,6 +111,9 @@ void APP_Init(void)
 	COM_AddStreamedVariable(VAR_TEMP_KIDROOM, 3000);
 	COM_AddStreamedVariable(VAR_TEMP_OUTSIDE, 3000);
 
+	/* Turn on FAN of PWR OUT2*/
+	PWROUT_SetPct(OUT2, 100);
+
 }
 
 void APP_Start(void)
@@ -141,6 +147,7 @@ void APP_Start(void)
 
 void APP_Update_1s(void)
 {
+	// check midnight
 	static uint8_t dayNumber = 0;
 	uint8_t newDayNumber = 0;
 	newDayNumber = RTC_GetTime().Day;
@@ -152,7 +159,7 @@ void APP_Update_1s(void)
 		MPPT_MidnightNow();
 	}
 
-	// check midnight
+	ExtLightControl();
 }
 
 
@@ -198,6 +205,29 @@ static void ProcessMessage(s_CanRxMsg* msg)
 	return;
 }
 
+
+static void ExtLightControl(void)
+{
+	static uint8_t DarkOutside = 0;
+
+	uint8_t invalid;
+	if(VAR_GetVariable(VAR_MPPT_SOLAR_VOLTAGE_V100, &invalid) < 1000  && !DarkOutside)  // sun sets
+	{
+		DarkOutside = 1;
+		// enable exterior lights
+		PWROUT_SetPct(OUT1, 100);
+		PWROUT_SetPct(OUT4, 100);
+	}
+
+	if(VAR_GetVariable(VAR_MPPT_SOLAR_VOLTAGE_V100, &invalid) > 2000  && DarkOutside)  // sun rises
+	{
+		DarkOutside = 0;
+		// disable exterior lights
+		PWROUT_SetPct(OUT1,0);
+		PWROUT_SetPct(OUT4,0);
+	}
+
+}
 
 
 /* Interrupt callbacks*/
