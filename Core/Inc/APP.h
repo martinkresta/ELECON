@@ -13,9 +13,14 @@
 #include "MCAN.h"
 
 
-
 // CAN node ID
 #define THIS_NODE				NODEID_ELECON
+
+
+#define NUM_OF_ELEMTERS			3
+#define ELM_AC_300W					0
+#define ELM_AC_3KW					1
+#define ELM_AC_5KW					2
 
 
 void APP_Init(void);

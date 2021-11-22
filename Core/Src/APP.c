@@ -24,6 +24,7 @@
 #include "MPPT.h"
 #include "ELECON.h"
 #include "pwrout.h"
+#include "ELM.h"
 
 
 //#include "watchdog.h"
@@ -57,6 +58,7 @@ void APP_Init(void)
   SHUNT_Init(&hspi1);
   ELC_Init();
   PWROUT_Init();
+  ELM_Init(NUM_OF_ELEMTERS);
 
 
 
@@ -110,6 +112,13 @@ void APP_Init(void)
 	COM_AddStreamedVariable(VAR_TEMP_OFFICE, 3000);
 	COM_AddStreamedVariable(VAR_TEMP_KIDROOM, 3000);
 	COM_AddStreamedVariable(VAR_TEMP_OUTSIDE, 3000);
+
+
+	/*configure elmeters*/
+
+	ELM_AddMeter(ELM_AC_300W, EL1_Pin, VAR_CONS_AC300_WH);
+	ELM_AddMeter(ELM_AC_3KW, EL2_Pin, VAR_CONS_AC3KW_WH);
+	ELM_AddMeter(ELM_AC_5KW, EL3_Pin, VAR_CONS_AC5KW_WH);
 
 	/* Turn on FAN of PWR OUT2*/
 	PWROUT_SetPct(OUT2, 100);
