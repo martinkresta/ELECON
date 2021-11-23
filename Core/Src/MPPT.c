@@ -263,10 +263,10 @@ uint8_t validate16(uint16_t val, uint8_t* checksum, uint8_t* sum)
 
 uint8_t validate32(uint32_t val, uint8_t* checksum, uint8_t* sum)
 {
-	*sum += val && 0xFF;
-	*sum += (val && 0xFF00) >> 8;
-	*sum += (val && 0xFF0000) >> 16;
-	*sum += (val && 0xFF000000) >> 24;
+	*sum += val & 0xFF;
+	*sum += (val & 0xFF00) >> 8;
+	*sum += (val & 0xFF0000) >> 16;
+	*sum += (val & 0xFF000000) >> 24;
 	*sum += Hex2Uint(checksum, 2);
 	if (*(checksum+2) == '\n'  && *sum == MPPT_CHECKSUM_RES)
 	{

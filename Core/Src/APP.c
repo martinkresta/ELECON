@@ -107,6 +107,7 @@ void APP_Init(void)
 	COM_AddStreamedVariable(VAR_CHARGING_A10, 1000);  // Charging amps
 	COM_AddStreamedVariable(VAR_LOAD_A10, 1000);  // Load amps
 	COM_AddStreamedVariable(VAR_BAT_CURRENT_A10, 1000);  // Bat amps
+	COM_AddStreamedVariable(VAR_MPPT_SOLAR_VOLTAGE_V100, 1000);  // MPPT voltage
 
 	COM_AddStreamedVariable(VAR_TEMP_ELECON_BOARD, 3000);
 	COM_AddStreamedVariable(VAR_TEMP_OFFICE, 3000);
@@ -291,6 +292,14 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 	}
 
 }
+
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	ELM_ExtiCallback(GPIO_Pin);
+}
+
+
 
 
 
