@@ -11,6 +11,7 @@
 #include "SCOM.h"
 #include "VARS.h"
 #include "circbuf.h"
+#include "COM.h"
 
 
 typedef struct
@@ -366,7 +367,7 @@ static void ProcessMessage(void)
 					mRxBuffer[7] = 0;
 					mRxBuffer[8] = 0;
 					mRxBuffer[9] = 0;
-					COM_SendMessage(CMD_RPI_RTC_SYNC,&(mRxBuffer[2]),8);
+					COM_SendMessage(CMD_RTC_SYNC,&(mRxBuffer[2]),8);
 					// and set also the RTC here
 					unixtime |= mRxBuffer[2] << 24;
 					unixtime |= mRxBuffer[3] << 16;
