@@ -25,6 +25,7 @@
 #include "ELECON.h"
 #include "pwrout.h"
 #include "ELM.h"
+#include "GEST.h"
 
 
 //#include "watchdog.h"
@@ -194,6 +195,16 @@ static void ProcessMessage(s_CanRxMsg* msg)
 			break;
 		case  CMD_VAR_VALUE:
 			VAR_SetVariable(par1, par2, par3);  // tbd check valid flag
+			break;
+		case CMD_GESTURE:
+			if (par1 == GEST_AC3KW_TOGGLE)
+			{
+				AC_3kW(acs_TOGGLE);
+			}
+			else if(par1 == GEST_AC5KW_TOGGLE)
+			{
+				AC_5kW(acs_TOGGLE);
+			}
 			break;
 		case CMD_RPI_RTC_SYNC: // set RTC time
 			unixtime |= msg->data[0] << 24;

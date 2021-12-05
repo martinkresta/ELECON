@@ -15,6 +15,7 @@ typedef enum
 {
 	acs_OFF,
 	acs_ON,
+	acs_TOGGLE
 }
 eACState;
 
