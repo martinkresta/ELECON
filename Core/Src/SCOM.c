@@ -168,6 +168,27 @@ static void InitPcScanList(void)
 	UpdateScanList(VAR_CONS_COLD, 3000);
 	UpdateScanList(VAR_CONS_HOT, 3000);
 
+	UpdateScanList(VAR_HEAT_TOTAL_WH, 3000);
+	UpdateScanList(VAR_HEAT_HEATING_WH, 3000);
+
+	UpdateScanList(VAR_CONS_AC300_WH, 3000);
+	UpdateScanList(VAR_CONS_AC3KW_WH, 3000);
+	UpdateScanList(VAR_CONS_AC5KW_WH, 3000);
+	UpdateScanList(VAR_CONS_FRIDGE_WH, 3000);
+	UpdateScanList(VAR_CONS_KITCHEN_WH, 3000);
+	UpdateScanList(VAR_CONS_WASCHMACHINE_WH, 3000);
+	UpdateScanList(VAR_CONS_OTHER_WH, 3000);
+	UpdateScanList(VAR_CONS_TECHM_WH, 3000);
+
+	UpdateScanList(VAR_POW_AC300_W, 3000);
+	UpdateScanList(VAR_POW_AC3KW_W, 3000);
+	UpdateScanList(VAR_POW_AC5KW_W, 3000);
+	UpdateScanList(VAR_POW_FRIDGE_W, 3000);
+	UpdateScanList(VAR_POW_KITCHEN_W, 3000);
+	UpdateScanList(VAR_POW_WASCHMACHINE_W, 3000);
+	UpdateScanList(VAR_POW_OTHER_W, 3000);
+	UpdateScanList(VAR_POW_TECHM_W, 3000);
+
 
 	UpdateScanList(VAR_TEMP_BOILER, 3000);
 	UpdateScanList(VAR_TEMP_BOILER_IN, 3000);
