@@ -12,6 +12,7 @@
 #include "VARS.h"
 #include "circbuf.h"
 #include "COM.h"
+#include "UI.h"
 
 
 typedef struct
@@ -190,6 +191,8 @@ static void InitPcScanList(void)
 	UpdateScanList(VAR_POW_TECHM_W, 3000);
 
 
+	UpdateScanList(VAR_BOILER_POWER, 3000);
+	UpdateScanList(VAR_BOILER_HEAT, 3000);
 	UpdateScanList(VAR_TEMP_BOILER, 3000);
 	UpdateScanList(VAR_TEMP_BOILER_IN, 3000);
 	UpdateScanList(VAR_TEMP_BOILER_OUT, 3000);
@@ -401,7 +404,14 @@ static void ProcessMessage(void)
 				break;
 		}
 
-	HAL_UART_Receive_DMA(ComUart, mRxBuffer, 10);
+	if (HAL_OK != HAL_UART_Receive_DMA(ComUart, mRxBuffer, 10))
+	{
+		UI_LED_R_SetMode(eUI_BLINKING_FAST);
+	}
+	else
+	{
+		UI_LED_R_SetMode(eUI_OFF);
+	}
 	return;
 }
 
