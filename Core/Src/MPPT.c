@@ -86,7 +86,7 @@ void MPPT_Update_100ms(void)
 	uint32_t UartError;
 	sTxMsg txMsg;
 	txMsg.cmd = MPPT_CMD_GET;
-	static uint8_t validflag = 0;
+	//static uint8_t validflag = 0;
 
 	if (mNewDataReady)
 	{

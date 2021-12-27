@@ -32,7 +32,7 @@ void ELC_Init(void)
 
 void ELC_Update_1s(void)
 {
-	uint8_t invalid = 0;
+	uint16_t invalid = 0;
 	int16_t loadCurrennt_A10;
 	// collect available inputs
 	int16_t mpptCurrent_A10 = VAR_GetVariable(VAR_MPPT_BAT_CURRENT_A10, &invalid);

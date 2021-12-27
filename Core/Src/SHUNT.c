@@ -21,10 +21,7 @@ static uint8_t mTxData[10];
 static uint8_t mRxData[10];
 
 
-
-static uint8_t mNumOfMotors;
 static SPI_HandleTypeDef* mSpi;
-static uint8_t mSlaveHbCnt;
 static uint8_t mSpiBusy;
 static int32_t mRawADC;
 static int32_t mIbat_mA;
@@ -32,7 +29,7 @@ static int32_t mIbatAvg_mA;
 static int32_t mIfilter[SHUNT_I_FILTER_LENGTH];
 static uint8_t mFi = 0; // filter index
 
-static uint8_t mActiveSpiSlave;  // id of the slave which is just now selected for communication
+//static uint8_t mActiveSpiSlave;  // id of the slave which is just now selected for communication
 
 static uint8_t IsChecksumValid(void);
 static uint8_t SpiTransfer(uint8_t length, uint8_t* recdata);
@@ -86,10 +83,8 @@ static uint8_t SpiTransfer(uint8_t length, uint8_t* recdata);
 
  void SHUNT_Update_100ms()
  {
-	 uint8_t i;
-	 static int16_t mpptCurrent;
+	// static int16_t mpptCurrent;
 	 static int32_t filterSum;
-	 uint16_t invalid = 0;
 
 	// process the last readout value
 	 if(IsChecksumValid())

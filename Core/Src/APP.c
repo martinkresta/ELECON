@@ -168,6 +168,7 @@ void APP_Update_1s(void)
 
 		ELC_MidnightNow();
 		MPPT_MidnightNow();
+		ELM_ResetAllConsumptions();
 	}
 
 	ExtLightControl();

@@ -91,10 +91,13 @@ void Error_Handler(void);
 #define MPPT_TX_GPIO_Port GPIOC
 #define EL1_Pin GPIO_PIN_2
 #define EL1_GPIO_Port GPIOC
+#define EL1_EXTI_IRQn EXTI2_IRQn
 #define EL2_Pin GPIO_PIN_3
 #define EL2_GPIO_Port GPIOC
+#define EL2_EXTI_IRQn EXTI3_IRQn
 #define EL3_Pin GPIO_PIN_0
 #define EL3_GPIO_Port GPIOA
+#define EL3_EXTI_IRQn EXTI0_IRQn
 #define BAT_VOLTAGE_Pin GPIO_PIN_1
 #define BAT_VOLTAGE_GPIO_Port GPIOA
 #define IO4_Pin GPIO_PIN_3
