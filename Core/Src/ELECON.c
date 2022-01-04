@@ -10,6 +10,9 @@
 #include "ELECON.h"
 #include "VARS.h"
 #include "SHUNT.h"
+#include "BMS1.h"
+#include "BMS2.h"
+#include "COM.h"
 
 
 
@@ -20,6 +23,7 @@ int32_t mTodayCons_Ws;    // wattseconds
 uint8_t mChargingDisabledFlag;
 uint8_t mSOCInitialisedFlag;
 int32_t mBattEnergy_Wh;
+uint8_t mBatteryBalancedToday;
 
 void ELC_Init(void)
 {
@@ -37,11 +41,15 @@ void ELC_Update_1s(void)
 	// collect available inputs
 	int16_t mpptCurrent_A10 = VAR_GetVariable(VAR_MPPT_BAT_CURRENT_A10, &invalid);
 	int16_t shuntCurrent_A100 = VAR_GetVariable(VAR_SHUNT_CURRENT_A100, &invalid);
-	int16_t railVoltage_V10 = VAR_GetVariable(VAR_MPPT_BAT_VOLTAGE_V100, &invalid)/10;
-	//int16_t socBms1 = VAR_GetVariable(VAR_BMS1_SOC, &invalid);
-	int16_t socBms1 = 75;
+	//int16_t railVoltage_V10 = VAR_GetVariable(VAR_MPPT_BAT_VOLTAGE_V100, &invalid)/10;
+	int16_t railVoltage_V10 = VAR_GetVariable(VAR_BMS2_VOLTAGE_V10, &invalid);
+	int16_t socBms1 = VAR_GetVariable(VAR_BMS1_SOC, &invalid);
 	int16_t socBms2 = VAR_GetVariable(VAR_BMS2_SOC, &invalid);
-
+	int16_t optimalBalancingCurrent_A;  // optimal charging current during ongoing balancing
+	uint16_t bms1MaxVoltage_mV;
+	uint16_t bms2MaxVoltage_mV;
+	uint16_t maxCellVoltage_mV;
+	uint8_t rxdata[8];
 
 
 
@@ -97,6 +105,54 @@ void ELC_Update_1s(void)
 		// cumulate daily consumption
 		mTodayCons_Ws += (loadCurrennt_A10 * railVoltage_V10)/100;
 		VAR_SetVariable(VAR_CONS_TODAY_WH,(int16_t)(mTodayCons_Ws/3600), 1);
+
+		// calculate optimal charging current during balancing
+		if (mBatteryBalancedToday == 0)
+		{
+			optimalBalancingCurrent_A = 100;
+			bms1MaxVoltage_mV = BMS1_GetMaxCellVoltage();
+			bms2MaxVoltage_mV = BMS2_GetMaxCellVoltage();
+			if (bms1MaxVoltage_mV > bms2MaxVoltage_mV)
+			{
+				maxCellVoltage_mV = bms1MaxVoltage_mV;
+			}
+			else
+			{
+				maxCellVoltage_mV = bms2MaxVoltage_mV;
+			}
+			if (maxCellVoltage_mV > CELL_BALANCE_MV)
+			{
+					optimalBalancingCurrent_A = 2 + ((CELL_MAX_MV - maxCellVoltage_mV) * 40/(CELL_MAX_MV - CELL_BALANCE_MV));
+			}
+
+			// set the 100% SOC if all cells exceed the target voltage
+			if (BMS1_GetMinCellVoltage() >= CELL_TARGET_MV && BMS2_GetMinCellVoltage() >= CELL_TARGET_MV)
+			{
+				mBatteryBalancedToday = 1;
+				mSoc_pct100 = 10000;
+				mBattRemaining_mAs = BAT_EFF_CAPACITY_AH * AH2MAS;  // Convert Ah to mAs
+			}
+		}
+		else
+		{
+			optimalBalancingCurrent_A = 0;
+		}
+
+
+		// electric heater load control  (to lower charging current)
+
+		// Send status of balancedtoday and optimal balancing current to TECHM
+		rxdata[0] = 0;
+		rxdata[1] = mBatteryBalancedToday;
+		rxdata[2] = optimalBalancingCurrent_A >> 8;
+		rxdata[3] = optimalBalancingCurrent_A & 0xFF;
+		rxdata[4] = 0;
+		rxdata[5] = 0;
+		rxdata[6] = 0;
+		rxdata[7] = 0;
+		COM_SendMessage(CMD_BALANCE_INFO, rxdata, 8);
+
+		// control EV charging
 	}
 
 	else
@@ -113,5 +169,6 @@ void ELC_MidnightNow(void)
 {
 	// Reset counters at midnight
 	mTodayCons_Ws = 0;
+	mBatteryBalancedToday = 0;
 
 }

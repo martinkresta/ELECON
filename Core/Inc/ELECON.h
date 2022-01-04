@@ -14,6 +14,10 @@
 #define BAT_EFF_CAPACITY_AH			300
 #define AH2MAS									3600000
 
+#define CELL_BALANCE_MV					3400
+#define CELL_MAX_MV							3500
+#define CELL_TARGET_MV					3450
+
 
 void ELC_Init(void);
 

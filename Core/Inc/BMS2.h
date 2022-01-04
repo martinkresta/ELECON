@@ -18,7 +18,10 @@
 void BMS2_Init(UART_HandleTypeDef* huart);
 // Update function, to the called periodically by the scheduler
 void BMS2_Update_500ms(void);
-
+// Gets maximal cell voltage
+uint16_t BMS2_GetMaxCellVoltage(void);
+// Gets minimal cell voltage
+uint16_t BMS2_GetMinCellVoltage(void);
 
 void BMS2_UartRxCallback(uint16_t reclength);
 

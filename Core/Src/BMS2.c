@@ -19,10 +19,13 @@ static sPackInfo mPackInfo;
 static sLiveData mLiveData;
 static sCell Cells[16];
 static UART_HandleTypeDef* mBmsUart;
+static uint16_t mMaxCellVoltage_mV;
+static uint16_t mMinCellVoltage_mV;
 
 
 static void DecodeData(void);
 static uint8_t IsChecksumValid(void);
+static void CalculateCellStats(void);
 
 
 // Initialization of the BMS monitoring module
@@ -131,6 +134,18 @@ void BMS2_Update_500ms(void)
 
 }
 
+// Gets maximal cell voltage
+uint16_t BMS2_GetMaxCellVoltage(void)
+{
+	return mMaxCellVoltage_mV;
+}
+
+// Gets minimal cell voltage
+uint16_t BMS2_GetMinCellVoltage(void)
+{
+	return mMinCellVoltage_mV;
+}
+
 
 // checks the data in receive buffer, returns 1 if chksm is valid, 0 otherwise
 uint8_t IsChecksumValid(void)
@@ -208,6 +223,24 @@ void DecodeData(void)
 }
 
 
+void CalculateCellStats(void)
+{
+	mMaxCellVoltage_mV = 0;
+	mMinCellVoltage_mV = Cells[0].Voltage_mV ;
+	uint8_t i;
+	for (i = 0; i < 16; i++)
+	{
+		if (Cells[i].Voltage_mV > mMaxCellVoltage_mV)
+		{
+			mMaxCellVoltage_mV = Cells[i].Voltage_mV;
+		}
+
+		if (Cells[i].Voltage_mV < mMinCellVoltage_mV)
+		{
+			mMinCellVoltage_mV = Cells[i].Voltage_mV;
+		}
+	}
+}
 
 void BMS2_UartRxCallback(uint16_t reclength)
 {

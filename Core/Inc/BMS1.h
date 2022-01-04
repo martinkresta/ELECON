@@ -48,6 +48,10 @@ typedef struct{
 void BMS1_Init(UART_HandleTypeDef* huart);
 // Update function, to the called periodically by the scheduler
 void BMS1_Update_500ms(void);
+// Gets maximal cell voltage
+uint16_t BMS1_GetMaxCellVoltage(void);
+// Gets minimal cell voltage
+uint16_t BMS1_GetMinCellVoltage(void);
 
 
 void BMS1_UartRxCallback(uint16_t reclength);
