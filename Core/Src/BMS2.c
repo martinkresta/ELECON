@@ -70,6 +70,7 @@ void BMS2_Update_500ms(void)
 			if (1 == IsChecksumValid())
 			{
 				DecodeData();
+				CalculateCellStats();
 				validflag = 1;
 			}
 			else
