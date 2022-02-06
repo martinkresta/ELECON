@@ -382,23 +382,20 @@ static void ProcessMessage(void)
 				UpdateScanList(varId, sendPeriod);
 				SendVariable(varId);
 				break;
-			case CMD_TM_SET_ELV:
-			//	DO_SetElv(data1);
-				break;
 			case CMD_RPI_RTC_SYNC:
-					// forward to can
-					mRxBuffer[6] = 0;
-					mRxBuffer[7] = 0;
-					mRxBuffer[8] = 0;
-					mRxBuffer[9] = 0;
-					COM_SendMessage(CMD_RTC_SYNC,&(mRxBuffer[2]),8);
-					// and set also the RTC here
-					unixtime |= mRxBuffer[2] << 24;
-					unixtime |= mRxBuffer[3] << 16;
-					unixtime |= mRxBuffer[4] << 8;
-					unixtime |= mRxBuffer[5];
-					RTC_SetUnixTime(unixtime);
-					break;
+				// forward to can
+				mRxBuffer[6] = 0;
+				mRxBuffer[7] = 0;
+				mRxBuffer[8] = 0;
+				mRxBuffer[9] = 0;
+				COM_SendMessage(CMD_RTC_SYNC,&(mRxBuffer[2]),8);
+				// and set also the RTC here
+				unixtime |= mRxBuffer[2] << 24;
+				unixtime |= mRxBuffer[3] << 16;
+				unixtime |= mRxBuffer[4] << 8;
+				unixtime |= mRxBuffer[5];
+				RTC_SetUnixTime(unixtime);
+				break;
 			case CMD_SET_VAR_VALUE:
 				VAR_SetVariable(data1 & 0x7FFF, data2, ((data1 & 0x8000)? 0 : 1));
 				break;
@@ -406,11 +403,21 @@ static void ProcessMessage(void)
 
 	if (HAL_OK != HAL_UART_Receive_DMA(ComUart, mRxBuffer, 10))
 	{
-		UI_LED_R_SetMode(eUI_BLINKING_FAST);
+		if(HAL_UART_ERROR_DMA == HAL_UART_GetError(ComUart))
+		{
+			UI_LED_B_SetMode(eUI_BLINKING_FAST);
+			//HAL_UART_AbortReceive(ComUart);
+			//HAL_UART_Receive_DMA(ComUart, mRxBuffer, 10);
+		}
+		else
+		{
+			UI_LED_R_SetMode(eUI_BLINKING_FAST);
+		}
 	}
 	else
 	{
 		UI_LED_R_SetMode(eUI_OFF);
+		UI_LED_B_SetMode(eUI_OFF);
 	}
 	return;
 }

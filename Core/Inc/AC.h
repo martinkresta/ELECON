@@ -11,6 +11,10 @@
 
 #include "main.h"
 
+
+#define AC_MIN_ON_TIME_S			180
+#define AC_KEEP_ON_POWER_W		15
+
 typedef enum
 {
 	acs_OFF,
