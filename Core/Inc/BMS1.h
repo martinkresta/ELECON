@@ -16,6 +16,16 @@
 #define BMS_DATA_LENGTH 58   // documantation says 58,
 #define DMA_REC_LENGTH 59 // maximal allowed length of DMA transfer
 
+
+#define BMS_STAT_ALLOW_CHARGE					0x01
+#define BMS_STAT_ALLOW_DISCHARGE			0x02
+#define BMS_STAT_COM_ERROR						0x04
+#define BMS_STAT_CELL_LOW_VOLTAGE			0x08
+#define BMS_STAT_CELL_HIGH_VOLTAGE		0x10
+#define BMS_STAT_LOW_TEMPERATURE			0x20
+#define BMS_STAT_HIGH_TEMPERATURE			0x40
+#define BMS_STAT_SOC_UNKNOWN					0x80
+
 typedef struct{
 	uint16_t Voltage_mV;
 	int16_t Temp_C;
@@ -52,6 +62,8 @@ void BMS1_Update_500ms(void);
 uint16_t BMS1_GetMaxCellVoltage(void);
 // Gets minimal cell voltage
 uint16_t BMS1_GetMinCellVoltage(void);
+// gets status of charge enable relay
+uint8_t BMS1_IsChargingEnabled(void);
 
 
 void BMS1_UartRxCallback(uint16_t reclength);

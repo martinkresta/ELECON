@@ -71,7 +71,8 @@ void ELC_Update_1s(void)
 
 		// Set the 100% SOC when one of the pack is full
 
-		if (((socBms1 >= 99) || (socBms2 >= 99)) && mpptCurrent_A10 == 0 && mChargingDisabledFlag == 0)
+	//	if (((socBms1 >= 99 && socBms2 > 90) || (socBms2 >= 99)) && mpptCurrent_A10 == 0 && mChargingDisabledFlag == 0)
+		if ((!BMS1_IsChargingEnabled() || !BMS2_IsChargingEnabled())  && mChargingDisabledFlag == 0)
 		{
 			mSoc_pct100 = 10000;
 			mBattRemaining_mAs = BAT_EFF_CAPACITY_AH * AH2MAS;  // Convert Ah to mAs

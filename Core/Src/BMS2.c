@@ -147,6 +147,11 @@ uint16_t BMS2_GetMinCellVoltage(void)
 	return mMinCellVoltage_mV;
 }
 
+uint8_t BMS2_IsChargingEnabled(void)
+{
+	return mLiveData.Status & BMS_STAT_ALLOW_CHARGE;
+}
+
 
 // checks the data in receive buffer, returns 1 if chksm is valid, 0 otherwise
 uint8_t IsChecksumValid(void)
