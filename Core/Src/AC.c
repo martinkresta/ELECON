@@ -47,7 +47,7 @@ void AC_Update_1s(void)
   {
   	if (m3KwStateTimer_s  > AC_MIN_ON_TIME_S)
   	{
-  		if (ELM_GetPowerW(ELM_AC_3KW) < AC_KEEP_ON_POWER_W)
+  		if (ELM_GetPowerW(ELM_AC_3KW) < AC_KEEP_ON_POWER_W_3KW)
   		{
   			AC_3kW(acs_OFF);
   		}
@@ -55,7 +55,7 @@ void AC_Update_1s(void)
 
 		if (m5KwStateTimer_s  > AC_MIN_ON_TIME_S)
 		{
-			if (ELM_GetPowerW(ELM_AC_5KW) < AC_KEEP_ON_POWER_W)
+			if (ELM_GetPowerW(ELM_AC_5KW) < AC_KEEP_ON_POWER_W_5KW)
 			{
 				AC_5kW(acs_OFF);
 			}

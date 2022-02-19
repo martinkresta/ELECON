@@ -13,7 +13,8 @@
 
 
 #define AC_MIN_ON_TIME_S			180
-#define AC_KEEP_ON_POWER_W		15
+#define AC_KEEP_ON_POWER_W_5KW		15
+#define AC_KEEP_ON_POWER_W_3KW		6
 
 typedef enum
 {
