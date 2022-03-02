@@ -166,6 +166,18 @@ void Error_Handler(void);
 #define IO2_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
+// ADC channels
+
+#define NUM_OF_ADC_CHANNELS		6
+
+#define ADC_CHANNEL_AUX_BAT_V			0
+#define ADC_CHANNEL_OUT4					1
+#define ADC_CHANNEL_OUT3					2
+#define ADC_CHANNEL_OUT2					3
+#define ADC_CHANNEL_OUT1					4
+#define ADC_CHANNEL_AUX_BAT_I			5
+
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

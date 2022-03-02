@@ -26,6 +26,7 @@
 #include "pwrout.h"
 #include "ELM.h"
 #include "GEST.h"
+#include "ADC.h"
 
 
 //#include "watchdog.h"
@@ -60,6 +61,7 @@ void APP_Init(void)
   ELC_Init();
   PWROUT_Init();
   ELM_Init(NUM_OF_ELEMTERS);
+  ADC_Init(&hadc1, &hdma_adc1, NUM_OF_ADC_CHANNELS);
 
 
 

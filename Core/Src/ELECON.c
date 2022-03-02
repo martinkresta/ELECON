@@ -13,6 +13,7 @@
 #include "BMS1.h"
 #include "BMS2.h"
 #include "COM.h"
+#include "ADC.h"
 
 
 
@@ -171,5 +172,25 @@ void ELC_MidnightNow(void)
 	// Reset counters at midnight
 	mTodayCons_Ws = 0;
 	mBatteryBalancedToday = 0;
-
 }
+
+
+void ControlAuxBat(void)
+{
+
+	uint16_t VbatRaw;
+	uint8_t BackupOn = 0;
+	BackupOn = HAL_GPIO_ReadPin(BCKP_STATE_GPIO_Port, BCKP_STATE_Pin);
+	// Read Aux battery voltage
+
+	//uint16_t VbatRaw = ADC_GetValue(ADC_CHANNEL_AUX_BAT_V);  // raw ADC result
+//	double Vbat_mV = (ADC_VREF_MV/4096.0 * VbatRaw * 12) / 2.44 ;  // convert to milivolts
+	// Read Aux battery current
+
+	// check status of backup
+
+	// enable/disable charging
+
+	// enable disable backup
+}
+

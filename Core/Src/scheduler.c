@@ -20,6 +20,7 @@
 #include "ELECON.h"
 #include "ELM.h"
 #include "APP.h"
+#include "ADC.h"
 
 
 
@@ -233,7 +234,7 @@ static void Timer_Task_100ms(void)
 	TEMP_Update100ms();
 	MPPT_Update_100ms();
 	SHUNT_Update_100ms();
-//	ADC_StartConversion();
+	ADC_StartConversion();
 }
 
 /**
