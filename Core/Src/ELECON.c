@@ -51,7 +51,7 @@ void ELC_Update_1s(void)
 	uint16_t bms1MaxVoltage_mV;
 	uint16_t bms2MaxVoltage_mV;
 	uint16_t maxCellVoltage_mV;
-	uint8_t rxdata[8];
+	uint8_t txdata[8];
 
 
 
@@ -145,15 +145,15 @@ void ELC_Update_1s(void)
 		// electric heater load control  (to lower charging current)
 
 		// Send status of balancedtoday and optimal balancing current to TECHM
-		rxdata[0] = 0;
-		rxdata[1] = mBatteryBalancedToday;
-		rxdata[2] = optimalBalancingCurrent_A >> 8;
-		rxdata[3] = optimalBalancingCurrent_A & 0xFF;
-		rxdata[4] = 0;
-		rxdata[5] = 0;
-		rxdata[6] = 0;
-		rxdata[7] = 0;
-		COM_SendMessage(CMD_BALANCE_INFO, rxdata, 8);
+		txdata[0] = 0;
+		txdata[1] = mBatteryBalancedToday;
+		txdata[2] = optimalBalancingCurrent_A >> 8;
+		txdata[3] = optimalBalancingCurrent_A & 0xFF;
+		txdata[4] = 0;
+		txdata[5] = 0;
+		txdata[6] = 0;
+		txdata[7] = 0;
+		COM_SendMessage(CMD_BALANCE_INFO, txdata, 8);
 
 		// control EV charging
 	}
