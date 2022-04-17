@@ -18,6 +18,8 @@
 #define CELL_MAX_MV							3500
 #define CELL_TARGET_MV					3450
 
+#define BAT_FULL_TARGET_HOUR			15
+
 
 void ELC_Init(void);
 

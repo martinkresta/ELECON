@@ -15,6 +15,7 @@
 #include "COM.h"
 #include "ADC.h"
 #include "UI.h"
+#include "RTC.h"
 
 
 
@@ -48,6 +49,10 @@ void ELC_Update_1s(void)
 	int16_t socBms1 = VAR_GetVariable(VAR_BMS1_SOC, &invalid);
 	int16_t socBms2 = VAR_GetVariable(VAR_BMS2_SOC, &invalid);
 	int16_t optimalBalancingCurrent_A;  // optimal charging current during ongoing balancing
+	int16_t optimalChargingCurrent_A;  // optimal charging current during the day, to reach 100% SOC at BAT_FULL_TARGET_HOUR
+	int64_t remainingTime_s;
+	sDateTime now;
+
 	uint16_t bms1MaxVoltage_mV;
 	uint16_t bms2MaxVoltage_mV;
 	uint16_t maxCellVoltage_mV;
@@ -89,6 +94,12 @@ void ELC_Update_1s(void)
 
 		// calculate energy consumption
 		mBattRemaining_mAs += SHUNT_GetIbat_mA();    // charged/consumed miliamperseconds during last second
+
+		// limit to 100%
+		if (mBattRemaining_mAs > (BAT_EFF_CAPACITY_AH * AH2MAS))
+		{
+			mBattRemaining_mAs = BAT_EFF_CAPACITY_AH * AH2MAS;
+		}
 
 		// calulate SOC
 		mSoc_pct100 = mBattRemaining_mAs / (BAT_EFF_CAPACITY_AH * AH2MAS / 10000);
@@ -135,10 +146,29 @@ void ELC_Update_1s(void)
 				mSoc_pct100 = 10000;
 				mBattRemaining_mAs = BAT_EFF_CAPACITY_AH * AH2MAS;  // Convert Ah to mAs
 			}
+
+			// calculate optimal charging current to reach full SOC at certain time
+
+			// calculate remaining time in seconds
+
+			now = RTC_GetTime();
+			if (now.Hour < BAT_FULL_TARGET_HOUR)
+			{
+				remainingTime_s = (BAT_FULL_TARGET_HOUR - now.Hour - 1) * 3600 + (60 - now.Minute)*60;
+				optimalChargingCurrent_A = ((BAT_EFF_CAPACITY_AH * AH2MAS) - mBattRemaining_mAs) / (remainingTime_s * 1000);
+
+				optimalChargingCurrent_A -= 4;  // compensate quantization (10A) by ELHEATER
+			}
+			else
+			{
+				optimalChargingCurrent_A = 100;
+			}
+
 		}
 		else
 		{
 			optimalBalancingCurrent_A = 0;
+			optimalChargingCurrent_A = 0;
 		}
 
 
@@ -147,8 +177,16 @@ void ELC_Update_1s(void)
 		// Send status of balancedtoday and optimal balancing current to TECHM
 		txdata[0] = 0;
 		txdata[1] = mBatteryBalancedToday;
-		txdata[2] = optimalBalancingCurrent_A >> 8;
-		txdata[3] = optimalBalancingCurrent_A & 0xFF;
+		if (optimalChargingCurrent_A >= optimalBalancingCurrent_A)
+		{
+			txdata[2] = optimalBalancingCurrent_A >> 8;
+			txdata[3] = optimalBalancingCurrent_A & 0xFF;
+		}
+		else
+		{
+			txdata[2] = optimalChargingCurrent_A >> 8;
+			txdata[3] = optimalChargingCurrent_A & 0xFF;
+		}
 		txdata[4] = 0;
 		txdata[5] = 0;
 		txdata[6] = 0;
