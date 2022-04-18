@@ -135,7 +135,7 @@ void APP_Start(void)
 	UI_LED_B_SetMode(eUI_OFF);
 	UI_Buzzer_SetMode(eUI_OFF);
 
-	HAL_GPIO_WritePin(REL1_GPIO_Port,REL1_Pin,GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(REL1_GPIO_Port,REL1_Pin,GPIO_PIN_SET);
 	HAL_GPIO_WritePin(REL2_GPIO_Port,REL2_Pin,GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(REL3_GPIO_Port,REL3_Pin,GPIO_PIN_RESET);
 

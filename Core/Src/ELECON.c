@@ -202,6 +202,8 @@ void ELC_Update_1s(void)
 		// TBD invalidate some values
 	}
 
+	ControlAuxBat();
+
 
 }
 
@@ -227,7 +229,7 @@ void ControlAuxBat(void)
 	VbatRaw = ADC_GetValue(ADC_CHANNEL_AUX_BAT_V);  // raw ADC result
 	double Vbat_mV = (ADC_VREF_MV/4096.0 * VbatRaw * 12) / 2.44 ;  // convert to milivolts
 	// Read Aux battery current
-	IbatRaw = ADC_GetValue(ADC_CHANNEL_AUX_BAT_V);  // raw ADC result
+	IbatRaw = ADC_GetValue(ADC_CHANNEL_AUX_BAT_I);  // raw ADC result
 	double Ibat_mA = (ADC_VREF_MV/4096.0 * IbatRaw) * 2.128 ;  // convert to miliamperes
 
 	// check status of backup
