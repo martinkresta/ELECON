@@ -222,6 +222,11 @@ static void InitPcScanList(void)
 	UpdateScanList(VAR_TEMP_KIDROOM, 3000);
 	UpdateScanList(VAR_TEMP_OUTSIDE, 3000);
 
+	UpdateScanList(VAR_METEO_WIND_BURST, 1000);
+	UpdateScanList(VAR_METEO_WIND_AVG, 1000);
+	UpdateScanList(VAR_METEO_WIND_POW, 5000);
+	UpdateScanList(VAR_METEO_WIND_ENERGY, 5000);
+
 
 	UpdateScanList(VAR_BMS1_CELL1_MV, 3000);
 	UpdateScanList(VAR_BMS1_CELL2_MV, 3000);
