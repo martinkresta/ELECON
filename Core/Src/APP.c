@@ -200,11 +200,11 @@ static void ProcessMessage(s_CanRxMsg* msg)
 		case CMD_GESTURE:
 			if (par1 == GEST_AC3KW_TOGGLE)
 			{
-				AC_3kW(acs_TOGGLE);
+			  AC_3kW_ButtonGesture();
 			}
 			else if(par1 == GEST_AC5KW_TOGGLE)
 			{
-				AC_5kW(acs_TOGGLE);
+			  AC_5kW_ButtonGesture();
 			}
 			break;
 		case CMD_RPI_RTC_SYNC: // set RTC time

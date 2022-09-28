@@ -22,7 +22,31 @@ typedef enum
 	acs_ON,
 	acs_TOGGLE
 }
-eACState;
+eACControl;
+
+
+typedef enum
+{
+  acs_Off,
+  acs_On,
+  acs_OnKeepSetting,
+  acs_KeepOn,
+  acs_AutoOff
+}eACState;
+
+
+typedef struct
+{
+  eACState state;
+  uint32_t OnTimer;
+  uint32_t SettingTimer;
+  uint8_t EnableAutoOff;
+  uint32_t MinOnTime;
+  uint8_t AutoOfPower;
+  uint8_t ElmeterId;
+  GPIO_TypeDef* RelayPort;
+  uint16_t RelayPin;
+}sDCAC;
 
 
 
@@ -30,12 +54,16 @@ void AC_Init(void);
 
 void AC_Update_1s(void);
 
-void AC_300W(eACState state);
+void AC_3kW_ButtonGesture(void);
+void AC_5kW_ButtonGesture(void);
 
-void AC_3kW(eACState state);
+/*
+void AC_300W(eACControl state);
 
-void AC_5kW(eACState state);
+void AC_3kW(eACControl state);
 
+void AC_5kW(eACControl state);
+*/
 
 
 #endif /* INC_AC_H_ */
