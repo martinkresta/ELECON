@@ -43,7 +43,7 @@ void AC_Init(void)
   AC3kW.MinOnTime = 15*60;  // 15 min
   AC3kW.state = acs_Off;
   AC3kW.OnTimer = 0;
-  AC3kW.ElmeterId = ELM_AC_300W;
+  AC3kW.ElmeterId = ELM_AC_3KW;
   AC3kW.RelayPin = REL2_Pin;
   AC3kW.RelayPort = REL2_GPIO_Port;
   SwitchRelay(acs_OFF, AC3kW.RelayPort, AC3kW.RelayPin);
@@ -53,7 +53,7 @@ void AC_Init(void)
   AC5kW.MinOnTime = 5*60;  // 5min
   AC5kW.state = acs_Off;
   AC5kW.OnTimer = 0;
-  AC5kW.ElmeterId = ELM_AC_300W;
+  AC5kW.ElmeterId = ELM_AC_5KW;
   AC5kW.RelayPin = REL3_Pin;
   AC5kW.RelayPort = REL3_GPIO_Port;
   SwitchRelay(acs_OFF, AC5kW.RelayPort, AC5kW.RelayPin);
