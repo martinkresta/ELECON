@@ -11,6 +11,7 @@
 
 #include "main.h"
 #include "MCAN.h"
+#include "stdbool.h"
 
 
 // CAN node ID

@@ -28,7 +28,7 @@ typedef struct
 
 uint8_t mRxBuffer[COM_MSGLEN];
 //uint8_t mTxBuffer[COM_MSGLEN];
-uint8_t mRxLength, mNewDataReady, mTxBusy;
+static uint8_t mRxLength, mNewDataReady, mTxBusy;
 
 CB_handle mTxMsgBuffer;
 s_ScomTxMsg mTxMsg;
