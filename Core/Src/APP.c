@@ -31,6 +31,7 @@
 
 
 
+
 s_CanRxMsg rmsg;
 
 static void ProcessMessage(s_CanRxMsg* msg);
@@ -257,7 +258,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if (huart->Instance == huart1.Instance)
 	{
-		SCOM_UartTxCallback();
+		//SCOM_UartTxCallback();
 	}
 	else if (huart->Instance == hlpuart1.Instance)
 	{
@@ -270,7 +271,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if (huart->Instance == huart1.Instance)
 	{
-		SCOM_UartRxCallback();
+	//	SCOM_UartRxCallback();
 	}
 	else if (huart->Instance == hlpuart1.Instance)
 	{

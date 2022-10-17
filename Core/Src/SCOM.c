@@ -8,11 +8,14 @@
  */
 
 #include "main.h"
+#include "APP.h"
 #include "SCOM.h"
 #include "VARS.h"
 #include "circbuf.h"
 #include "COM.h"
 #include "UI.h"
+#include "RPISERP.h"
+#include "RTC.h"
 
 
 typedef struct
@@ -26,14 +29,9 @@ typedef struct
 
 
 
-uint8_t mRxBuffer[COM_MSGLEN];
-//uint8_t mTxBuffer[COM_MSGLEN];
-static uint8_t mRxLength, mNewDataReady, mTxBusy;
 
-CB_handle mTxMsgBuffer;
 s_ScomTxMsg mTxMsg;
 
-UART_HandleTypeDef* ComUart;
 sScanVariable mScanList[NUM_OF_SCAN_VARS];
 
 uint8_t mPcConnected;
@@ -44,27 +42,19 @@ uint16_t mNsSendTimer;  // timer for sending network status
 static void UpdateScanList(uint16_t varId, uint16_t period);
 static void SendVariable(uint16_t id);
 static void InitPcScanList(void);
-static uint8_t Send(s_ScomTxMsg msg);
+static void Send(s_ScomTxMsg msg, uint8_t bytesToSend);
 static void ProcessMessage(void);
 
 void SCOM_Init(UART_HandleTypeDef* uart)
 {
 
-	ComUart = uart;
-	mRxLength = 0;
-	mNewDataReady = 0;
-	mTxBusy = 0;
+	//ComUart = uart;
 	mPcConnected = 0;
 	InitPcScanList();
 
-	mTxMsgBuffer = CB_Create(sizeof(s_ScomTxMsg),SCOM_TX_MSG_BUFLEN);
-	if (mTxMsgBuffer == NULL)
-	{
-		// TBD error
-	}
+	RSP_Init(uart, &hdma_usart1_tx, &hdma_usart1_rx);
 
-	// enable receiver
-	HAL_UART_Receive_DMA(ComUart, mRxBuffer, 10);
+
 
 }
 
@@ -116,7 +106,7 @@ void SCOM_Update_10ms(void)
 		}
 	}
 
-	SCOM_Transmit();  // transmit physically;
+//	SCOM_Transmit();  // transmit physically;
 }
 
 /* private methods */
@@ -297,11 +287,9 @@ static void InitPcScanList(void)
 }
 
 //returns 0 when OK, 1 if transceiver is busy
-static uint8_t Send(s_ScomTxMsg msg)
+static void Send(s_ScomTxMsg msg, uint8_t bytesToSend)
 {
-
-	// instert to Tx buffer
-	CB_Put(mTxMsgBuffer,(uint8_t*) &msg);
+  RSP_Send((uint8_t*) &msg, bytesToSend);
 }
 
 static void UpdateScanList(uint16_t varId, uint16_t period)
@@ -360,20 +348,31 @@ static void SendVariable(uint16_t id)
 	msg.data[7] = tmp & 0xFF;
 	msg.data[8] = validflag >> 8;
 	msg.data[9] = validflag & 0xFF;
-	Send(msg);
+	Send(msg, COM_MSGLEN);
 }
 
 static void ProcessMessage(void)
 {
+
+    uint8_t rxData[COM_MSGLEN];
+    uint8_t length;
 		uint16_t varId, sendPeriod;
-		uint16_t id = (mRxBuffer[0]<<8) | mRxBuffer[1];
+		uint16_t id;
 		uint32_t unixtime = 0;
 
+		if (false == RSP_GetMessage(rxData, &length))
+		{
+		   // no data available in the receive fifo buffer
+		  return;
+		}
+
+		id = (rxData[0]<<8) | rxData[1];
+
 		uint16_t data1, data2, data3, data4;
-		data1 = (mRxBuffer[2]<<8) | mRxBuffer[3];
-		data2 = (mRxBuffer[4]<<8) | mRxBuffer[5];
-		data3 = (mRxBuffer[6]<<8) | mRxBuffer[7];
-		data4 = (mRxBuffer[8]<<8) | mRxBuffer[9];
+		data1 = (rxData[2]<<8) | rxData[3];
+		data2 = (rxData[4]<<8) | rxData[5];
+		data3 = (rxData[6]<<8) | rxData[7];
+		data4 = (rxData[8]<<8) | rxData[9];
 
 		switch (id )  // message ID
 		{
@@ -382,23 +381,23 @@ static void ProcessMessage(void)
 				mPcHbTimer = 0;
 				break;
 			case CMD_READ_VAR_REQUEST:
-				varId = (mRxBuffer[2]<<8) | mRxBuffer[3];
-				sendPeriod = (mRxBuffer[4]<<8) | mRxBuffer[5];
+				varId = data1;
+				sendPeriod = data2;
 				UpdateScanList(varId, sendPeriod);
 				SendVariable(varId);
 				break;
 			case CMD_RPI_RTC_SYNC:
 				// forward to can
-				mRxBuffer[6] = 0;
-				mRxBuffer[7] = 0;
-				mRxBuffer[8] = 0;
-				mRxBuffer[9] = 0;
-				COM_SendMessage(CMD_RTC_SYNC,&(mRxBuffer[2]),8);
+			  rxData[6] = 0;
+			  rxData[7] = 0;
+			  rxData[8] = 0;
+			  rxData[9] = 0;
+				COM_SendMessage(CMD_RTC_SYNC,&(rxData[2]),8);
 				// and set also the RTC here
-				unixtime |= mRxBuffer[2] << 24;
-				unixtime |= mRxBuffer[3] << 16;
-				unixtime |= mRxBuffer[4] << 8;
-				unixtime |= mRxBuffer[5];
+				unixtime |= rxData[2] << 24;
+				unixtime |= rxData[3] << 16;
+				unixtime |= rxData[4] << 8;
+				unixtime |= rxData[5];
 				RTC_SetUnixTime(unixtime);
 				break;
 			case CMD_SET_VAR_VALUE:
@@ -406,59 +405,7 @@ static void ProcessMessage(void)
 				break;
 		}
 
-	if (HAL_OK != HAL_UART_Receive_DMA(ComUart, mRxBuffer, 10))
-	{
-		if(HAL_UART_ERROR_DMA == HAL_UART_GetError(ComUart))
-		{
-			UI_LED_B_SetMode(eUI_BLINKING_FAST);
-			//HAL_UART_AbortReceive(ComUart);
-			//HAL_UART_Receive_DMA(ComUart, mRxBuffer, 10);
-		}
-		else
-		{
-			UI_LED_R_SetMode(eUI_BLINKING_FAST);
-		}
-	}
-	else
-	{
-		UI_LED_R_SetMode(eUI_OFF);
-		UI_LED_B_SetMode(eUI_OFF);
-	}
+
 	return;
 }
-
-
-
-// function to be called periodically at a rate of transmitting SCOM messages. (for example every 5 ms)
-// One SCOM message is is sent if TX buffer is not empty
-void SCOM_Transmit(void)
-{
-	if  (0 == CB_Probe(mTxMsgBuffer,(uint8_t*)&mTxMsg) && (mTxBusy == 0))  // fetch the message from the buffer
-	{
-		if (HAL_OK == HAL_UART_Transmit_DMA(ComUart, mTxMsg.data, COM_MSGLEN))  // transmit the message
-		{
-			CB_Remove(mTxMsgBuffer);  // remove the message from the buffer only if transmission was succesfull
-		}
-	}
-}
-
-
-/* Interrupt callbacks */
-void SCOM_UartTxCallback(void)
-{
-	mTxBusy = 0;
-	SCOM_Transmit();   // automatically transmit next messages
-}
-
-
-void SCOM_UartRxCallback(void)
-{
-	mNewDataReady = 1;
-	mRxLength = 1;
-	ProcessMessage();
-}
-
-
-
-
 

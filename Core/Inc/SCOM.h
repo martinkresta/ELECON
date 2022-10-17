@@ -62,7 +62,7 @@
 
 typedef struct
 {
-	uint8_t data[10];
+	uint8_t data[COM_MSGLEN];
 }s_ScomTxMsg;
 
 

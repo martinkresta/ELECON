@@ -202,7 +202,8 @@ void USART1_IRQHandler(void)
         CB_Put(mTransmitFifo, mRxData);
       }
     }
-    mRxBusy = false;
+    // reenable the receiver for next packet reception
+    StartReciever();
   }
 
   if (mRspUart->Instance->ISR & USART_ISR_TC)   // Transfer Complete

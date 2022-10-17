@@ -21,6 +21,7 @@
 #include "ELM.h"
 #include "APP.h"
 #include "ADC.h"
+#include "RPISERP.h"
 
 
 
@@ -193,6 +194,7 @@ static void Timer_Task_1ms(void)
 static void Timer_Task_5ms(void)
 {	
 	MCAN_Transmit();
+	RSP_TransmitFromFifo();
 }
 
 /**
