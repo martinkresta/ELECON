@@ -227,6 +227,19 @@ static void InitPcScanList(void)
 	UpdateScanList(VAR_METEO_WIND_POW, 5000);
 	UpdateScanList(VAR_METEO_WIND_ENERGY, 5000);
 
+	UpdateScanList(VAR_TEMP_RECU_FC, 3000);
+	UpdateScanList(VAR_TEMP_RECU_FH, 3000);
+	UpdateScanList(VAR_TEMP_RECU_WH, 3000);
+	UpdateScanList(VAR_TEMP_RECU_WC, 3000);
+	UpdateScanList(VAR_RH_RECU_FH, 3000);
+	UpdateScanList(VAR_RH_RECU_WH, 3000);
+	UpdateScanList(VAR_CO2_RECU, 3000);
+	UpdateScanList(VAR_DP_RECU_F, 3000);
+	UpdateScanList(VAR_DP_RECU_W, 3000);
+	UpdateScanList(VAR_RECU_FAN_F, 3000);
+	UpdateScanList(VAR_RECU_FAN_W, 3000);
+	UpdateScanList(VAR_CURR_RECU_A, 3000);
+
 
 	UpdateScanList(VAR_BMS1_CELL1_MV, 3000);
 	UpdateScanList(VAR_BMS1_CELL2_MV, 3000);
