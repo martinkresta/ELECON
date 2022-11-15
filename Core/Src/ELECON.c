@@ -126,6 +126,8 @@ void ELC_Update_1s(void)
 			optimalBalancingCurrent_A = 100;
 			bms1MaxVoltage_mV = BMS1_GetMaxCellVoltage();
 			bms2MaxVoltage_mV = BMS2_GetMaxCellVoltage();
+
+			// Stage 1 : Support the cell top balancing by lowering charging current
 			if (bms1MaxVoltage_mV > bms2MaxVoltage_mV)
 			{
 				maxCellVoltage_mV = bms1MaxVoltage_mV;
@@ -147,21 +149,23 @@ void ELC_Update_1s(void)
 				mBattRemaining_mAs = BAT_EFF_CAPACITY_AH * AH2MAS;  // Convert Ah to mAs
 			}
 
+			// stage 2: Maximal utilization of available PV energy:
+
 			// calculate optimal charging current to reach full SOC at certain time
 
 			// calculate remaining time in seconds
 
 			now = RTC_GetTime();
-			if (now.Hour < BAT_FULL_TARGET_HOUR)
+			if (now.Hour < BAT_FULL_TARGET_HOUR && now.Month > 2 && now.Month < 11)  // Only if it is not a DARK_SEASON from November to February
 			{
 				remainingTime_s = (BAT_FULL_TARGET_HOUR - now.Hour - 1) * 3600 + (60 - now.Minute)*60;
 				optimalChargingCurrent_A = ((BAT_EFF_CAPACITY_AH * AH2MAS) - mBattRemaining_mAs) / (remainingTime_s * 1000);
 
-				optimalChargingCurrent_A -= 4;  // compensate quantization (10A) by ELHEATER
+				optimalChargingCurrent_A -= 4;  // pre-compensate quantization error  (10A) by ELHEATER
 			}
 			else
 			{
-				optimalChargingCurrent_A = 100;
+				//optimalChargingCurrent_A = 100;
 			}
 
 		}
