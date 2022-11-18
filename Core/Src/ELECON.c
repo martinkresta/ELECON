@@ -40,7 +40,7 @@ void ELC_Init(void)
 void ELC_Update_1s(void)
 {
 	uint16_t invalid = 0;
-	int16_t loadCurrennt_A10;
+	int16_t loadCurrennt_A100;
 	// collect available inputs
 	int16_t mpptCurrent_A10 = VAR_GetVariable(VAR_MPPT_BAT_CURRENT_A10, &invalid);
 	int16_t shuntCurrent_A100 = VAR_GetVariable(VAR_SHUNT_CURRENT_A100, &invalid);
@@ -112,12 +112,12 @@ void ELC_Update_1s(void)
 
 
     // calculate load current and power
-		loadCurrennt_A10 = ((mpptCurrent_A10 * 10) - shuntCurrent_A100)/10;
-		VAR_SetVariable(VAR_LOAD_A10,loadCurrennt_A10,1);
-		VAR_SetVariable(VAR_LOAD_W,(loadCurrennt_A10 * railVoltage_V10)/100,1);
+		loadCurrennt_A100 = ((mpptCurrent_A10 * 10) - shuntCurrent_A100);
+    VAR_SetVariable (VAR_LOAD_A100,loadCurrennt_A100,1);
+		VAR_SetVariable(VAR_LOAD_W,(loadCurrennt_A100 * railVoltage_V10)/1000,1);
 
 		// cumulate daily consumption
-		mTodayCons_Ws += (loadCurrennt_A10 * railVoltage_V10)/100;
+    mTodayCons_Ws += (loadCurrennt_A100 * railVoltage_V10)/1000;
 		VAR_SetVariable(VAR_CONS_TODAY_WH,(int16_t)(mTodayCons_Ws/3600), 1);
 
 		// calculate optimal charging current during balancing

@@ -106,7 +106,7 @@ void APP_Init(void)
 	COM_AddStreamedVariable(VAR_BAT_SOC, 1000);  // SOC
 	COM_AddStreamedVariable(VAR_BAT_VOLTAGE_V10, 1000);  // VBAT
 	COM_AddStreamedVariable(VAR_CHARGING_A10, 1000);  // Charging amps
-	COM_AddStreamedVariable(VAR_LOAD_A10, 1000);  // Load amps
+	COM_AddStreamedVariable(VAR_LOAD_A100, 1000);  // Load amps
 	COM_AddStreamedVariable(VAR_BAT_CURRENT_A10, 1000);  // Bat amps
 	COM_AddStreamedVariable(VAR_MPPT_SOLAR_VOLTAGE_V100, 1000);  // MPPT voltage
 
@@ -195,7 +195,7 @@ static void ProcessMessage(s_CanRxMsg* msg)
 		case CMD_BUTTON_STATE:
 			break;
 		case CMD_AC_REMOTE_REQ:
-		  AC_RemoteRequest((eDCACType)par1,(eACControl)par2,par3);
+		  AC_RemoteRequest((eDCACType)par1,(eACControl)par2,(uint16_t)par3);
 		  break;
 		case  CMD_VAR_VALUE:
 			VAR_SetVariable(par1, par2, par3);  // tbd check valid flag

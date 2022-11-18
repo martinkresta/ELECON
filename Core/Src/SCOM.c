@@ -128,12 +128,13 @@ static void InitPcScanList(void)
 
 	UpdateScanList(VAR_BAT_SOC, 1000);
 	UpdateScanList(VAR_BAT_VOLTAGE_V10, 1000);
-	UpdateScanList(VAR_LOAD_A10, 1000);
+	UpdateScanList(VAR_LOAD_A100, 1000);
 	UpdateScanList(VAR_CHARGING_A10, 1000);
 	UpdateScanList(VAR_BAT_CURRENT_A10, 1000);
 	UpdateScanList(VAR_CONS_TODAY_WH, 3000);
 	UpdateScanList(VAR_BAT_ENERGY_WH, 3000);
 	UpdateScanList(VAR_LOAD_W, 1000);
+	UpdateScanList(VAR_SHUNT_CURRENT_A100, 1000);
 
 
 	UpdateScanList(VAR_BMS1_SOC, 1000);

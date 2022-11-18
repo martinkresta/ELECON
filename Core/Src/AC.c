@@ -26,7 +26,7 @@ sDCAC AC5kW;
 void SwitchRelay(eACControl state,GPIO_TypeDef* port, uint16_t pin);
 void AcStateMachine(sDCAC* AC);
 void ButtonGesture(sDCAC* AC);
-void RemoteRequest(sDCAC* AC, eACControl request, uint32_t keepOnTime);
+void RemoteRequest(sDCAC* AC, eACControl request, uint16_t keepOnTime);
 
 void AC_Init(void)
 {
@@ -224,7 +224,7 @@ void AC_5kW_ButtonGesture(void)
   ButtonGesture(&AC5kW);
 }
 
-void AC_RemoteRequest(eDCACType type, eACControl request, uint32_t keepOnTime)
+void AC_RemoteRequest(eDCACType type, eACControl request, uint16_t keepOnTime)
 {
   switch (type)
   {
@@ -241,7 +241,7 @@ void AC_RemoteRequest(eDCACType type, eACControl request, uint32_t keepOnTime)
 }
 
 
-void RemoteRequest(sDCAC* AC, eACControl request, uint32_t keepOnTime)
+void RemoteRequest(sDCAC* AC, eACControl request, uint16_t keepOnTime)
 {
   if(request == acs_ON)
   {
@@ -256,9 +256,13 @@ void RemoteRequest(sDCAC* AC, eACControl request, uint32_t keepOnTime)
   else if(request == acs_OFF)
   {
    // AC->OnTimer = 0;   // not necessary
-    AC->RemoteRequests --;
+    if(AC->RemoteRequests > 0)
+    {
+      AC->RemoteRequests --;
+    }
     if(AC->RemoteRequests == 0)
     {
+      AC->OnTimer = 0;
       AC->state = acs_AutoOff;
     }
   }

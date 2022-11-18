@@ -39,7 +39,7 @@ typedef enum
 typedef struct
 {
   eACState state;
-  uint32_t OnTimer;
+  uint16_t OnTimer;
   uint32_t SettingTimer;
   uint8_t EnableAutoOff;
   uint32_t MinOnTime;
@@ -66,7 +66,7 @@ void AC_Update_1s(void);
 void AC_3kW_ButtonGesture(void);
 void AC_5kW_ButtonGesture(void);
 
-void AC_RemoteRequest(eDCACType type, eACControl request, uint32_t keepOnTime);
+void AC_RemoteRequest(eDCACType type, eACControl request, uint16_t keepOnTime);
 
 /*
 void AC_300W(eACControl state);
