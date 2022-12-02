@@ -94,11 +94,11 @@ void AC_Update_1s(void)
 	}
 
 	// start the 300W AC when kitchen consumption is significant -> enable air cleaner   (applicable only in dark season)
-	if(100 < VAR_GetVariable(VAR_POW_KITCHEN_W, &invalid) && AC300W.state == acs_Off)
+	if((50 < VAR_GetVariable(VAR_POW_KITCHEN_W, &invalid)) && AC300W.state == acs_Off)
 	{
 	  if(AC300W.OnTimer < 180)
     {
-      AC300W.OnTimer = 180;  // during the 60 seconds the fridge should start and than keep the DCAC by the load
+      AC300W.OnTimer = 180;  // during the 3 minutes the air cleaner should start and than keep the DCAC by the load
     }
     AC300W.state = acs_KeepOn;
     SwitchRelay(acs_ON, AC300W.RelayPort, AC300W.RelayPin);
