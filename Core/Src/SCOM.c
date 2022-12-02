@@ -118,12 +118,13 @@ static void InitPcScanList(void)
 
 	UpdateScanList(VAR_BAT_SOC, 1000);
 	UpdateScanList(VAR_BAT_VOLTAGE_V10, 1000);
-	UpdateScanList(VAR_LOAD_A10, 1000);
+	UpdateScanList(VAR_LOAD_A100, 1000);
 	UpdateScanList(VAR_CHARGING_A10, 1000);
 	UpdateScanList(VAR_BAT_CURRENT_A10, 1000);
 	UpdateScanList(VAR_CONS_TODAY_WH, 3000);
 	UpdateScanList(VAR_BAT_ENERGY_WH, 3000);
 	UpdateScanList(VAR_LOAD_W, 1000);
+	UpdateScanList(VAR_SHUNT_CURRENT_A100, 1000);
 
 
 	UpdateScanList(VAR_BMS1_SOC, 1000);
@@ -216,6 +217,19 @@ static void InitPcScanList(void)
 	UpdateScanList(VAR_METEO_WIND_AVG, 1000);
 	UpdateScanList(VAR_METEO_WIND_POW, 5000);
 	UpdateScanList(VAR_METEO_WIND_ENERGY, 5000);
+
+	UpdateScanList(VAR_TEMP_RECU_FC, 3000);
+	UpdateScanList(VAR_TEMP_RECU_FH, 3000);
+	UpdateScanList(VAR_TEMP_RECU_WH, 3000);
+	UpdateScanList(VAR_TEMP_RECU_WC, 3000);
+	UpdateScanList(VAR_RH_RECU_FH, 3000);
+	UpdateScanList(VAR_RH_RECU_WH, 3000);
+	UpdateScanList(VAR_CO2_RECU, 3000);
+	UpdateScanList(VAR_DP_RECU_F, 3000);
+	UpdateScanList(VAR_DP_RECU_W, 3000);
+	UpdateScanList(VAR_RECU_FAN_F, 3000);
+	UpdateScanList(VAR_RECU_FAN_W, 3000);
+	UpdateScanList(VAR_CURR_RECU_A, 3000);
 
 
 	UpdateScanList(VAR_BMS1_CELL1_MV, 3000);

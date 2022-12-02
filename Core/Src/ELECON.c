@@ -40,7 +40,7 @@ void ELC_Init(void)
 void ELC_Update_1s(void)
 {
 	uint16_t invalid = 0;
-	int16_t loadCurrennt_A10;
+	int16_t loadCurrennt_A100;
 	// collect available inputs
 	int16_t mpptCurrent_A10 = VAR_GetVariable(VAR_MPPT_BAT_CURRENT_A10, &invalid);
 	int16_t shuntCurrent_A100 = VAR_GetVariable(VAR_SHUNT_CURRENT_A100, &invalid);
@@ -112,12 +112,12 @@ void ELC_Update_1s(void)
 
 
     // calculate load current and power
-		loadCurrennt_A10 = ((mpptCurrent_A10 * 10) - shuntCurrent_A100)/10;
-		VAR_SetVariable(VAR_LOAD_A10,loadCurrennt_A10,1);
-		VAR_SetVariable(VAR_LOAD_W,(loadCurrennt_A10 * railVoltage_V10)/100,1);
+		loadCurrennt_A100 = ((mpptCurrent_A10 * 10) - shuntCurrent_A100);
+    VAR_SetVariable (VAR_LOAD_A100,loadCurrennt_A100,1);
+		VAR_SetVariable(VAR_LOAD_W,(loadCurrennt_A100 * railVoltage_V10)/1000,1);
 
 		// cumulate daily consumption
-		mTodayCons_Ws += (loadCurrennt_A10 * railVoltage_V10)/100;
+    mTodayCons_Ws += (loadCurrennt_A100 * railVoltage_V10)/1000;
 		VAR_SetVariable(VAR_CONS_TODAY_WH,(int16_t)(mTodayCons_Ws/3600), 1);
 
 		// calculate optimal charging current during balancing
@@ -126,6 +126,8 @@ void ELC_Update_1s(void)
 			optimalBalancingCurrent_A = 100;
 			bms1MaxVoltage_mV = BMS1_GetMaxCellVoltage();
 			bms2MaxVoltage_mV = BMS2_GetMaxCellVoltage();
+
+			// Stage 1 : Support the cell top balancing by lowering charging current
 			if (bms1MaxVoltage_mV > bms2MaxVoltage_mV)
 			{
 				maxCellVoltage_mV = bms1MaxVoltage_mV;
@@ -147,21 +149,23 @@ void ELC_Update_1s(void)
 				mBattRemaining_mAs = BAT_EFF_CAPACITY_AH * AH2MAS;  // Convert Ah to mAs
 			}
 
+			// stage 2: Maximal utilization of available PV energy:
+
 			// calculate optimal charging current to reach full SOC at certain time
 
 			// calculate remaining time in seconds
 
 			now = RTC_GetTime();
-			if (now.Hour < BAT_FULL_TARGET_HOUR)
+			if (now.Hour < BAT_FULL_TARGET_HOUR && now.Month > 2 && now.Month < 11)  // Only if it is not a DARK_SEASON from November to February
 			{
 				remainingTime_s = (BAT_FULL_TARGET_HOUR - now.Hour - 1) * 3600 + (60 - now.Minute)*60;
 				optimalChargingCurrent_A = ((BAT_EFF_CAPACITY_AH * AH2MAS) - mBattRemaining_mAs) / (remainingTime_s * 1000);
 
-				optimalChargingCurrent_A -= 4;  // compensate quantization (10A) by ELHEATER
+				optimalChargingCurrent_A -= 4;  // pre-compensate quantization error  (10A) by ELHEATER
 			}
 			else
 			{
-				optimalChargingCurrent_A = 100;
+				//optimalChargingCurrent_A = 100;
 			}
 
 		}

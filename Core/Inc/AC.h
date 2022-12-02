@@ -13,12 +13,13 @@
 
 
 #define AC_MIN_ON_TIME_S			180
-#define AC_KEEP_ON_POWER_W_5KW		15
+#define AC_KEEP_ON_POWER_W_5KW		15   // 4 minutes
 #define AC_KEEP_ON_POWER_W_3KW		6
+#define AC_KEEP_ON_POWER_W_300W    20   // 3 minutes
 
 typedef enum
 {
-	acs_OFF,
+	acs_OFF = 0,
 	acs_ON,
 	acs_TOGGLE
 }
@@ -38,15 +39,23 @@ typedef enum
 typedef struct
 {
   eACState state;
-  uint32_t OnTimer;
+  uint16_t OnTimer;
   uint32_t SettingTimer;
   uint8_t EnableAutoOff;
   uint32_t MinOnTime;
   uint8_t AutoOfPower;
   uint8_t ElmeterId;
+  uint8_t RemoteRequests;
   GPIO_TypeDef* RelayPort;
   uint16_t RelayPin;
 }sDCAC;
+
+typedef enum
+{
+  eDCAC_300W = 0,
+  eDCAC_3kW,
+  eDCAC_5kW,
+}eDCACType;
 
 
 
@@ -56,6 +65,8 @@ void AC_Update_1s(void);
 
 void AC_3kW_ButtonGesture(void);
 void AC_5kW_ButtonGesture(void);
+
+void AC_RemoteRequest(eDCACType type, eACControl request, uint16_t keepOnTime);
 
 /*
 void AC_300W(eACControl state);
