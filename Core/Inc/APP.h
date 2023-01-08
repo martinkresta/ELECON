@@ -28,6 +28,7 @@ void APP_Init(void);
 void APP_Start(void);
 void APP_ProcessMessages(void);
 void APP_Update_1s(void);
+void APP_RpiHeartbeat(void);
 
 
 #endif /* INC_APP_H_ */

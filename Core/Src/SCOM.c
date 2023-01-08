@@ -413,6 +413,7 @@ static void ProcessMessage(void)
 				unixtime |= rxData[4] << 8;
 				unixtime |= rxData[5];
 				RTC_SetUnixTime(unixtime);
+				APP_RpiHeartbeat();
 				break;
 			case CMD_SET_VAR_VALUE:
 				VAR_SetVariable(data1 & 0x7FFF, data2, ((data1 & 0x8000)? 0 : 1));
