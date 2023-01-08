@@ -6,12 +6,12 @@
  *      Brief:  Low layer of serial protocol for communication with RaspberryPi
  */
 
-#include "APP.h"
 #include "RPISERP.h"
 #include "circbuf.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+
 
 
 
@@ -71,7 +71,7 @@ void RSP_Init(UART_HandleTypeDef* Uart, DMA_Channel_TypeDef* TxDma, DMA_Channel_
   StartReciever();
 
   // configure TX DMA
-  mTxDma->CCR = DMA_CCR_MINC | DMA_CCR_TCIE;
+  mTxDma->CCR = DMA_CCR_MINC | DMA_CCR_TCIE | DMA_CCR_DIR;
   mTxDma->CMAR = (uint32_t)(mTxData);
   mTxDma->CPAR = (uint32_t)(&(Uart->Instance->TDR));
 
@@ -87,11 +87,13 @@ void RSP_Init(UART_HandleTypeDef* Uart, DMA_Channel_TypeDef* TxDma, DMA_Channel_
 void RSP_Send(uint8_t* data, uint8_t length)
 {
   uint8_t txPacket[RSP_PACKET_SIZE];
-  if (length < RSP_PACKET_SIZE - 2)
+  if (length <= RSP_PACKET_SIZE - 4)
   {
-    txPacket[0] = length;
-    memcpy(&(txPacket[1]), data, length);
-    txPacket[length + 1] = Checksum(txPacket, length +1 );
+    txPacket[0] = RSP_MSG_START_B1;
+    txPacket[1] = RSP_MSG_START_B2;
+    txPacket[2] = length;
+    memcpy(&(txPacket[3]), data, length);
+    txPacket[length + 3] = Checksum(txPacket, length +3 );
     CB_Put(mTransmitFifo, txPacket);
   }
   else
@@ -111,7 +113,7 @@ void RSP_TransmitFromFifo(void)
 
   if(0 == CB_Get(mTransmitFifo, mTxData))  // if some packet is found in Tx fifo
   {
-    StartTransmiter(mTxData[0] + 2); // size = num of databytes + header byte + checksum
+    StartTransmiter(mTxData[2] + 4); // size = num of databytes + 2 header bytes + length byte + checksum
   }
 }
 
@@ -135,7 +137,7 @@ bool RSP_GetMessage(uint8_t* data, uint8_t* length)
 
 void InitUartPeripheral(void)
 {
-  mRspUart->Instance = USART1;
+ // mRspUart->Instance = USART2;
   mRspUart->Init.BaudRate = RSP_BAUD_RATE;
   mRspUart->Init.WordLength = UART_WORDLENGTH_8B;
   mRspUart->Init.StopBits = UART_STOPBITS_1;
@@ -164,8 +166,9 @@ void StartTransmiter(uint8_t size)
 {
   if (size <= RSP_PACKET_SIZE)
   {
+    mTxBusy = true;
     mTxDma->CCR &= ~DMA_CCR_EN;  // disable dma
-    mTxDma->CNDTR = RSP_PACKET_SIZE;
+    mTxDma->CNDTR = size;
     mRspUart->Instance->ICR = USART_ICR_TCCF;
     mTxDma->CCR |= DMA_CCR_EN;  // enable DMA channel
     mRspUart->Instance->CR1 |= USART_CR1_TCIE | USART_CR1_TE | USART_CR1_UE;  // TCinterrupt enabled
@@ -187,21 +190,25 @@ uint8_t Checksum(uint8_t* data, uint8_t length)
 
 /* Hard-coded IRQ handlers of DMA channels and UART*/
 
-void USART1_IRQHandler(void)
+void USART2_IRQHandler(void)
 {
   if (mRspUart->Instance->ISR & USART_ISR_IDLE)   // Rx Idle interrupt
   {
     uint8_t rxSize = RSP_PACKET_SIZE - mRxDma->CNDTR;
     mRxDma->CCR &= ~DMA_CCR_EN; // disable the DMA channel even when it is not completed transfer
     mRspUart->Instance->ICR = USART_ICR_IDLECF;  // clear the IDLE flag
-    if (rxSize == mRxData[0] + 2)   // if full packet was received
+    if(mRxData[0] == RSP_MSG_START_B1  && mRxData[1] == RSP_MSG_START_B2)
     {
-      // check checksum
-      if(mRxData[rxSize - 1] == Checksum(mRxData, rxSize-1))
+      if (rxSize == mRxData[2] + 4)   // if full packet was received
       {
-        CB_Put(mTransmitFifo, mRxData);
+         //check checksum
+        if(mRxData[rxSize - 1] == Checksum(mRxData, rxSize-1))
+        {
+          CB_Put(mReceiveFifo, &(mRxData[2]));
+        }
       }
     }
+
     // reenable the receiver for next packet reception
     StartReciever();
   }
@@ -214,10 +221,12 @@ void USART1_IRQHandler(void)
 }
 
 /* TX DMA*/
-void DMA1_Channel4_IRQHandler(void)
+//void DMA1_Channel4_IRQHandler(void)
+void DMA1_Channel4_5_6_7_IRQHandler(void)
 {
   mTxDma->CCR &= ~DMA_CCR_EN;  // disable the interrupt
   DMA1->IFCR |= DMA_IFCR_CGIF4;  // clear all DMA flags
+  mTxBusy = false;
 }
 
 /* RX DMA*/

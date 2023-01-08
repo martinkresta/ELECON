@@ -52,7 +52,7 @@ void SCOM_Init(UART_HandleTypeDef* uart)
 	mPcConnected = 0;
 	InitPcScanList();
 
-	RSP_Init(uart, &hdma_usart1_tx, &hdma_usart1_rx);
+	RSP_Init(uart, &hdma_usart1_tx.Instance, &hdma_usart1_rx.Instance);
 
 
 
