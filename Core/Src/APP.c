@@ -50,14 +50,14 @@ void APP_Init(void)
 	OW_Init();
 	TEMP_Init();
 	VAR_Init();
-	SCOM_Init(&huart1);
+	//SCOM_Init(&huart1);
 	MCAN_Init(&hcan1, THIS_NODE);
   COM_Init(THIS_NODE);
   AC_Init();
   BMS1_Init(&huart3);
   BMS2_Init(&huart2);
   MPPT_Init(&hlpuart1);
-  WDG_Init(3000);
+ // WDG_Init(3000);
   SHUNT_Init(&hspi1);
   ELC_Init();
   PWROUT_Init();
