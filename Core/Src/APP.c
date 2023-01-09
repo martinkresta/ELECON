@@ -33,12 +33,16 @@
 
 s_CanRxMsg rmsg;
 
+static uint16_t RpiHB_Timer;
+
 static void ProcessMessage(s_CanRxMsg* msg);
 static void ExtLightControl(void);
 
 // public methods
 void APP_Init(void)
 {
+
+  RpiHB_Timer = 80;
 
 	sUIHwInit uihw;
 
@@ -172,10 +176,23 @@ void APP_Update_1s(void)
 	}
 
 	ExtLightControl();
+
+	// check RPI hartbeat
+  if(RpiHB_Timer > 0 )RpiHB_Timer --;
+  if(RpiHB_Timer == 0)
+  {
+    UI_LED_B_SetMode(eUI_BLINKING_FAST);  // signal missingRPI HB
+    UI_LED_R_SetMode(eUI_ON);  // signal missingRPI HB latch
+  }
 }
 
 
 
+void APP_RpiHeartbeat(void)
+{
+  RpiHB_Timer = 80;
+  UI_LED_B_SetMode(eUI_OFF);  // signal missingRPI HB
+}
 
 /*Private methods*/
 

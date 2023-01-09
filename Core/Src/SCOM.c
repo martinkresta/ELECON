@@ -15,6 +15,7 @@
 #include "UI.h"
 #include "RPISERP.h"
 #include "RTC.h"
+#include "APP.h"
 
 
 typedef struct
@@ -366,17 +367,15 @@ static void SendVariable(uint16_t id)
 	int16_t tmp = VAR_GetVariable(id, &invalid);
 	validflag = (invalid == INVALID_FLAG ? 0 : 1);
 
-	msg.data[0] = MSG_START_B1;     // message START
-	msg.data[1] = MSG_START_B2;
-	msg.data[2] = CMD_TM_VAR_VALUE >> 8;
-	msg.data[3] = CMD_TM_VAR_VALUE & 0xFF;
-	msg.data[4] = id >> 8;
-	msg.data[5] = id  & 0xFF;
-	msg.data[6] = tmp >> 8;
-	msg.data[7] = tmp & 0xFF;
-	msg.data[8] = validflag >> 8;
-	msg.data[9] = validflag & 0xFF;
-	Send(msg.data, 10);
+	msg.data[0] = CMD_TM_VAR_VALUE >> 8;
+	msg.data[1] = CMD_TM_VAR_VALUE & 0xFF;
+	msg.data[2] = id >> 8;
+	msg.data[3] = id  & 0xFF;
+	msg.data[4] = tmp >> 8;
+	msg.data[5] = tmp & 0xFF;
+	msg.data[6] = validflag >> 8;
+	msg.data[7] = validflag & 0xFF;
+	Send(msg.data, 8);
 }
 
 static void ProcessMessage(void)
@@ -416,6 +415,7 @@ static void ProcessMessage(void)
 				unixtime |= mRxBuffer[4] << 8;
 				unixtime |= mRxBuffer[5];
 				RTC_SetUnixTime(unixtime);
+				APP_RpiHeartbeat();
 				break;
 			case CMD_SET_VAR_VALUE:
 				VAR_SetVariable(data1 & 0x7FFF, data2, ((data1 & 0x8000)? 0 : 1));
