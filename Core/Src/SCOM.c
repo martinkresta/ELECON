@@ -128,6 +128,9 @@ void SCOM_Update_10ms(void)
 static void InitPcScanList(void)
 {
 
+  UpdateScanList(VAR_SOLAR_POWER_W, 3000);
+  UpdateScanList(VAR_SOLAR_ENERGY_TODAY_10WH, 3000);
+
 	UpdateScanList(VAR_BAT_SOC, 1000);
 	UpdateScanList(VAR_BAT_VOLTAGE_V10, 1000);
 	UpdateScanList(VAR_LOAD_A100, 1000);
@@ -136,7 +139,7 @@ static void InitPcScanList(void)
 	UpdateScanList(VAR_CONS_TODAY_10WH, 3000);
 	UpdateScanList(VAR_BAT_ENERGY_WH, 3000);
 	UpdateScanList(VAR_LOAD_W, 1000);
-	UpdateScanList(VAR_SHUNT_PCK2_CURRENT_A100, 1000);
+	UpdateScanList(VAR_BAT_POWER_W, 5000);
 
 
 	UpdateScanList(VAR_BMS1_SOC, 1000);
@@ -161,6 +164,40 @@ static void InitPcScanList(void)
 	UpdateScanList(VAR_MPPT_SOLAR_MAX_VOLTAGE_V100, 3000);
 	UpdateScanList(VAR_MPPT_MAX_BAT_CURRENT_A10, 3000);
 	UpdateScanList(VAR_MPPT_TEMP_C, 3000);
+
+	UpdateScanList(VAR_MPPT_ENERGY_TODAY_WH, 5000);
+	UpdateScanList(VAR_SHUNT_PCK1_CURRENT_A100, 5000);
+	UpdateScanList(VAR_SHUNT_PCK2_CURRENT_A100, 5000);
+	UpdateScanList(VAR_BATPACK1_POWER_W, 5000);
+	UpdateScanList(VAR_BATPACK1_SOC, 5000);
+	UpdateScanList(VAR_BATPACK1_CURRENT_A10, 5000);
+	UpdateScanList(VAR_BATPACK1_ENERGY_WH, 5000);
+	UpdateScanList(VAR_BATPACK2_POWER_W, 5000);
+	UpdateScanList(VAR_BATPACK2_SOC, 5000);
+	UpdateScanList(VAR_BATPACK2_CURRENT_A10, 5000);
+	UpdateScanList(VAR_BATPACK2_ENERGY_WH, 5000);
+
+	UpdateScanList(VAR_AXPERT_TEMP_C, 5000);
+	UpdateScanList(VAR_AXPERT_AC_POWER_W, 5000);
+	UpdateScanList(VAR_AXPERT_BAT_CHARGING_A, 5000);
+	UpdateScanList(VAR_AXPERT_BAT_DISCHARGING_A, 5000);
+	UpdateScanList(VAR_AXPERT_BAT_VOLTAGE_V10, 5000);
+	UpdateScanList(VAR_AXPERT_PVS1_W, 5000);
+	UpdateScanList(VAR_AXPERT_PVS1_V10, 5000);
+	UpdateScanList(VAR_AXPERT_PVS1_A10, 5000);
+	UpdateScanList(VAR_AXPERT_PVS2_W, 5000);
+	UpdateScanList(VAR_AXPERT_PVS2_V10, 5000);
+	UpdateScanList(VAR_AXPERT_PVS2_A10, 5000);
+
+	UpdateScanList(VAR_AXPERT_BAT_POWER_W, 5000);
+	UpdateScanList(VAR_AXPERT_BAT_CURRENT_A, 5000);
+	UpdateScanList(VAR_AXPERT_SOLAR_W, 5000);
+	UpdateScanList(VAR_AXPERT_ENERGY_TODAY_WH, 5000);
+	UpdateScanList(VAR_AXPERT_LOAD_W, 5000);
+	UpdateScanList(VAR_AXPERT_DISCHARGING_W, 5000);
+
+
+
 
 	UpdateScanList(VAR_EL_HEATER_STATUS, 3000);
 	UpdateScanList(VAR_EL_HEATER_POWER, 3000);
@@ -224,6 +261,10 @@ static void InitPcScanList(void)
 	UpdateScanList(VAR_TEMP_OFFICE, 3000);
 	UpdateScanList(VAR_TEMP_KIDROOM, 3000);
 	UpdateScanList(VAR_TEMP_OUTSIDE, 3000);
+	UpdateScanList(VAR_TEMP_DILNA, 5000);
+	UpdateScanList(VAR_TEMP_AKUPACK1, 5000);
+	UpdateScanList(VAR_TEMP_BOARD_ELECON_D, 5000);
+
 
 	UpdateScanList(VAR_METEO_WIND_BURST, 1000);
 	UpdateScanList(VAR_METEO_WIND_AVG, 1000);

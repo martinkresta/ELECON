@@ -18,7 +18,7 @@
 
 #define SCOM_TX_MSG_BUFLEN	255
 
-#define NUM_OF_SCAN_VARS	180
+#define NUM_OF_SCAN_VARS	220
 
 
 
