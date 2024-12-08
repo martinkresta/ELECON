@@ -37,7 +37,7 @@ typedef struct{
 	uint32_t Vmax_mV;
 	uint32_t Vbalance_mV;
 	uint8_t NumOfCells;
-}sPackInfo;
+}sBmsPackInfo;
 
 typedef struct{
 	uint32_t VoltageTotal_mV;

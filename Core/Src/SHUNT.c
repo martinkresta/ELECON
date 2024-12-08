@@ -117,11 +117,11 @@ static uint8_t SpiTransfer(uint8_t length, uint8_t* recdata);
 
 		 if (mFi >= SHUNT_I_FILTER_LENGTH) mFi = 0;
 
-		 VAR_SetVariable(VAR_SHUNT_CURRENT_A100, (int16_t)(mIbatAvg_mA/10),1);
+		 VAR_SetVariable(VAR_SHUNT_PCK2_CURRENT_A100, (int16_t)(mIbatAvg_mA/10),1);
 	 }
 	 else
 	 {
-		 VAR_SetVariable(VAR_SHUNT_CURRENT_A100, (int16_t)(mIbatAvg_mA/10),0);
+		 VAR_SetVariable(VAR_SHUNT_PCK2_CURRENT_A100, (int16_t)(mIbatAvg_mA/10),0);
 	 }
 
 

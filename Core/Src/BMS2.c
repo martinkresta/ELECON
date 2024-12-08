@@ -15,7 +15,7 @@ static uint8_t mNewDataReady;
 static uint8_t mRecLength;
 static uint8_t mPackInfoValid;
 
-static sPackInfo mPackInfo;
+static sBmsPackInfo mPackInfo;
 static sLiveData mLiveData;
 static sCell Cells[16];
 static UART_HandleTypeDef* mBmsUart;
