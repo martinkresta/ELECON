@@ -19,9 +19,7 @@
 
 
 
-//int16_t mSoc_pct100;
 uint8_t mBattFullFlag;
-//int64_t mBattRemaining_mAs;  // miliamperseconds :-D
 int32_t mTodayCons_Ws;    // wattseconds
 int32_t mTodaySolarYield_Ws;    // wattseconds
 
@@ -37,14 +35,8 @@ sStorageInfo Storage;    // celkova baterie
 
 
 
-/*int16_t mPackSoc_pct100;
 
-uint8_t mSOCInitialisedFlag;
-int64_t mPackRemaining_mAs;  // miliamperseconds :-D
-int32_t mPackEnergy_Wh;
-uint8_t mPackBalancedToday;
-int32_t mPackPower_W;
-int32_t mPackCurrent_mA;*/
+void ControlAuxBat(void);
 
 
 void ELC_Init(void)
@@ -64,11 +56,8 @@ void ELC_Update_1s(void)
 	int16_t loadPowerW;
 	int16_t SolarPowerW;
 	// collect available inputs
-	//nt16_t mpptCurrent_A10 = VAR_GetVariable(VAR_MPPT_BAT_CURRENT_A10, &invalid);
-	//int16_t shuntCurrent_A100 = VAR_GetVariable(VAR_SHUNT_PCK2_CURRENT_A100, &invalid);
-	//int16_t railVoltage_V10 = VAR_GetVariable(VAR_MPPT_BAT_VOLTAGE_V100, &invalid)/10;
 
-	int16_t socBms1 = VAR_GetVariable(VAR_BMS1_SOC, &invalid);
+	//int16_t socBms1 = VAR_GetVariable(VAR_BMS1_SOC, &invalid);
 	int16_t socBms2 = VAR_GetVariable(VAR_BMS2_SOC, &invalid);
 	int16_t optimalBalancingCurrent_A;  // optimal charging current during ongoing balancing
 	int16_t optimalChargingCurrent_A;  // optimal charging current during the day, to reach 100% SOC at BAT_FULL_TARGET_HOUR
@@ -83,6 +72,7 @@ void ELC_Update_1s(void)
 
 	Pack2.Voltage_V10 = VAR_GetVariable(VAR_BMS2_VOLTAGE_V10, &invalid);
 	Pack2.Current_mA = SHUNT_GetIbat_mA();
+	Pack2.ChargingEnabled = BMS2_IsChargingEnabled();
 
 
 	if (invalid == 0)  // continue only if valid inputs
@@ -96,10 +86,7 @@ void ELC_Update_1s(void)
 			Pack2.Available_mAs = PACK14KWH_EFF_CAPACITY_AH * AH2MAS * Pack2.Soc_pct100 / 10000;
 		}
 
-
 		// Set the 100% SOC when one of the pack is full
-		Pack2.ChargingEnabled = BMS2_IsChargingEnabled();
-
 	//	if (((socBms1 >= 99 && socBms2 > 90) || (socBms2 >= 99)) && mpptCurrent_A10 == 0 && mChargingDisabledFlag == 0)
 		if ((!Pack2.ChargingEnabled)  && mChargingDisabledFlag == 0)
 		{
@@ -172,6 +159,10 @@ void ELC_Update_1s(void)
 
 
 
+
+
+
+
 		// calculate optimal charging current during balancing
 		if (mBatteryBalancedToday == 0)
 		{
@@ -199,7 +190,8 @@ void ELC_Update_1s(void)
 			{
 				mBatteryBalancedToday = 1;
 				Pack2.Soc_pct100 = 10000;
-				Storage.Available_mAs = BAT_EFF_CAPACITY_AH * AH2MAS;  // Convert Ah to mAs
+				Pack2.Available_mAs = PACK14KWH_EFF_CAPACITY_AH * AH2MAS;  // Convert Ah to mAs
+				//Storage.Available_mAs = BAT_EFF_CAPACITY_AH * AH2MAS;  // Convert Ah to mAs
 			}
 
 			// stage 2: Maximal utilization of available PV energy:
@@ -279,7 +271,7 @@ void ControlAuxBat(void)
 
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 	uint16_t VbatRaw;
-	uint16_t IbatRaw;
+	//uint16_t IbatRaw;
 	uint8_t BackupOn = 0;
 	BackupOn = HAL_GPIO_ReadPin(BCKP_STATE_GPIO_Port, BCKP_STATE_Pin);
 	// Read Aux battery voltage
@@ -287,8 +279,8 @@ void ControlAuxBat(void)
 	VbatRaw = ADC_GetValue(ADC_CHANNEL_AUX_BAT_V);  // raw ADC result
 	double Vbat_mV = (ADC_VREF_MV/4096.0 * VbatRaw * 12) / 2.44 ;  // convert to milivolts
 	// Read Aux battery current
-	IbatRaw = ADC_GetValue(ADC_CHANNEL_AUX_BAT_I);  // raw ADC result
-	double Ibat_mA = (ADC_VREF_MV/4096.0 * IbatRaw) * 2.128 ;  // convert to miliamperes
+	//IbatRaw = ADC_GetValue(ADC_CHANNEL_AUX_BAT_I);  // raw ADC result
+	//double Ibat_mA = (ADC_VREF_MV/4096.0 * IbatRaw) * 2.128 ;  // convert to miliamperes
 
 	// check status of backup
 	if (BackupOn == 1)
