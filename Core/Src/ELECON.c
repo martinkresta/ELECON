@@ -30,6 +30,7 @@ uint8_t mChargingDisabledFlag;
 
 // pack data
 
+sPackInfo Pack1;  // baterie 5kWh
 sPackInfo Pack2;  // baterie Doma
 sStorageInfo Storage;    // celkova baterie
 
@@ -37,6 +38,8 @@ sStorageInfo Storage;    // celkova baterie
 
 
 void ControlAuxBat(void);
+
+void UpdatePack1Data(void);
 
 
 void ELC_Init(void)
@@ -126,14 +129,15 @@ void ELC_Update_1s(void)
     Storage.Voltage_V10 = (Pack2.Voltage_V10 + VAR_GetVariable(VAR_BMS1_VOLTAGE_V10, &invalid))/2;
     // bat energy
     Storage.Energy_Wh = Pack2.Energy_Wh + VAR_GetVariable(VAR_BATPACK1_ENERGY_WH, &invalid);
-    // bat soc
-    Storage.Soc_pct100 =  Storage.Energy_Wh / BAT_EFF_CAPACITY_AH * 10000;
+
     // bat current
     Storage.Current_mA = Pack2.Current_mA + VAR_GetVariable(VAR_SHUNT_PCK1_CURRENT_A100, &invalid) * 10;
     // bat power
     Storage.Power_W = (Storage.Voltage_V10 * Storage.Current_mA) / 10000;
 
     Storage.Available_mAs = Pack2.Available_mAs + ((VAR_GetVariable(VAR_BATPACK1_ENERGY_WH, &invalid) /  ( VAR_GetVariable(VAR_BMS1_VOLTAGE_V10, &invalid)/10)) * AH2MAS);
+    // bat soc
+    Storage.Soc_pct100 =  Storage.Available_mAs / (BAT_EFF_CAPACITY_AH * AH2MAS / 10000);
 
 
 
@@ -265,6 +269,11 @@ void ELC_MidnightNow(void)
 	mBatteryBalancedToday = 0;
 }
 
+
+void UpdatePack1Data(void)
+{
+
+}
 
 void ControlAuxBat(void)
 {

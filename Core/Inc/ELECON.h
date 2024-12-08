@@ -28,7 +28,7 @@ typedef struct   // data of one battery pack monitored by shunt coulombmeter
   int32_t Energy_Wh;
   int32_t Power_W;
   int32_t Voltage_V10;        // BMS
-  int32_t Available_mAs;
+  int64_t Available_mAs;
   int32_t Current_mA;
   uint8_t ChargingEnabled;    // BMS
   uint8_t DischargingEnabled;
@@ -41,7 +41,7 @@ typedef struct   // agregated data of all battery Packs - overal storage capacit
   int32_t Energy_Wh;
   int32_t Power_W;
   int32_t Voltage_V10;
-  int32_t Available_mAs;
+  int64_t Available_mAs;
   int32_t Current_mA;
 }sStorageInfo;
 
