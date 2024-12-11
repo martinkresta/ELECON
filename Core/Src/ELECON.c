@@ -3,6 +3,30 @@
  *
  *  Created on: Nov 9, 2021
  *      Author: Martin
+ *      Brief:  This is the module responsible for monitoring the State of the battery , Solar power production and Load power.
+ *      Some of the measured and calculated values are just for monitoring, but some are also used for automatic utilsation of excess power (water heating)
+ *      and also for adjusting the charging current
+ *
+ *      Originally there were two battery packs 16xLIFEPO each with own BMS connected to ELECON board.
+ *      Those pack are connected in parallel and monitored by ONE precise SHUNT current monitor used for precise coulometry. (SOC calculation)
+ *
+ *      In 12/2024 was this module reworked to be prepared for separate battery pack.  It is planned to move one battery pack to another building.
+ *      Its BMS will be connected to other Control board (ELECON_D). There will be also new SHUNT for monitoring that remote battery pack.
+ *      The packs will be still in parallel configuration connected by pair of 25mm2 cables ~ 20mlong
+ *
+ *      Based on that.  This module will have to monitor one battery pack directly, and collect information about the remote pack (via CAN).
+ *      These information has to be smartly combined together to give an overall image of battery storage.
+ *
+ *
+ *      Further, also the part of Solar production will be monitored also by remote ELECON_D board.
+ *
+ *
+ *      Problem is that all this update has to be done during normall full operation.
+ *      It is not possible to switch of the system for more than few minutes.
+ *      Thus the new FW features has to be prepared and tested in advance as much as possible.
+ *      Then when the pack will be physically moved to other building, it has to work reliably.
+ *      This is the reason a major rework of this module. The battery pack abstraction is essential
+ *
  */
 
 
