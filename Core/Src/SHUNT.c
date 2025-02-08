@@ -137,9 +137,6 @@ int32_t SHUNT_GetIbat_mA(void)
 
 
 
-
-
-
  static uint8_t IsChecksumValid(void)
  {
 	 uint8_t sum = mAdcData[0] + mAdcData[1] +  mAdcData[2] + 0x9B;

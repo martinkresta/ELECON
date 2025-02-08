@@ -21,6 +21,9 @@
 #include "ELM.h"
 #include "APP.h"
 #include "ADC.h"
+#include "BCKPBAT.h"
+#include "LEMON.h"
+
 
 
 
@@ -277,6 +280,8 @@ static void Timer_Task_1s(void)
 	ELC_Update_1s();
 	APP_Update_1s();
 	ELM_Update_1s();
+	LEMON_Update_1s();
+	BCKPBAT_Update_1s();
 	//LED_Error_SetMode(eLED_BLINK_ONCE);
 	//	OW_Read(0);
 	//		OW_ConvertAll(0);

@@ -134,8 +134,6 @@ void BMS1_Update_500ms(void)
 	VAR_SetVariable(VAR_BMS1_CELL15_C, Cells[14].Temp_C, validflag);
 	VAR_SetVariable(VAR_BMS1_CELL16_C, Cells[15].Temp_C, validflag);
 
-
-
 }
 
 // Gets maximal cell voltage
