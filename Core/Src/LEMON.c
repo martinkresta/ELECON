@@ -31,7 +31,7 @@ void LEMON_Init(UART_HandleTypeDef* huart1, UART_HandleTypeDef* huart2)
   mLemon.Bms2 = &mBms2;
 
   // Configuration
-  mLemon.Cfg.Pack1_Ah = 80;
+  mLemon.Cfg.Pack1_Ah = 80;          // CONFIGURE!!!
   mLemon.Cfg.Pack2_Ah = 220;
   mLemon.Cfg.Shunt_R_uOhm = 250;  // not used so far
 
@@ -64,7 +64,7 @@ void LEMON_Update_1s(void)
   //MPPT_Update_1s();
 
   // Check if SOC initialization is needed
-  if(!mLemon.SocInitialized && mLemon.Bms2->LiveData.SOC)
+  if(!mLemon.SocInitialized)
   {
     SocReinit();
   }
@@ -120,14 +120,42 @@ void LEMON_UartRxCallback(UART_HandleTypeDef *huart, uint16_t reclength)
 // ********  Private methods  ********
 static void SocReinit(void)
 {
+  uint8_t ValidInit = 1;
+  uint64_t totalAvailable_mAs = 0;
+
   mLemon.Internal.TotalCapacity_Ah = mLemon.Cfg.Pack1_Ah + mLemon.Cfg.Pack2_Ah;
 
-  mLemon.Internal.Avilable_mAs = mLemon.Cfg.Pack1_Ah * AH2MAS * mLemon.Bms1->LiveData.SOC / 100 \
-                              + mLemon.Cfg.Pack2_Ah * AH2MAS * mLemon.Bms2->LiveData.SOC / 100;
+  if(mLemon.Cfg.Pack1_Ah)   // BMS1 should communicate
+  {
+    if(mLemon.Bms1->Active && mLemon.Bms1->LiveData.SOC)
+    {
+      totalAvailable_mAs += mLemon.Cfg.Pack1_Ah * AH2MAS * mLemon.Bms1->LiveData.SOC / 100;
+    }
+    else
+    {
+      ValidInit = 0;
+    }
+  }
 
-  mLemon.Storage.Soc = 100 * (mLemon.Internal.Avilable_mAs / AH2MAS) / (mLemon.Internal.TotalCapacity_Ah);  // in percents
+  if(mLemon.Cfg.Pack2_Ah)   // BMS2 should communicate
+  {
+    if(mLemon.Bms2->Active && mLemon.Bms2->LiveData.SOC)
+    {
+      totalAvailable_mAs += mLemon.Cfg.Pack2_Ah * AH2MAS * mLemon.Bms2->LiveData.SOC / 100;
+    }
+    else
+    {
+      ValidInit = 0;
+    }
+  }
 
-  mLemon.SocInitialized = 1;
+  if(ValidInit)
+  {
+
+    mLemon.Internal.Avilable_mAs = totalAvailable_mAs;
+    mLemon.Storage.Soc = 100 * (mLemon.Internal.Avilable_mAs / AH2MAS) / (mLemon.Internal.TotalCapacity_Ah);  // in percents
+    mLemon.SocInitialized = 1;
+  }
 }
 
 
@@ -147,6 +175,8 @@ static void CheckFullyCharged(void)
     mLemon.ChargingDisabledFlag = 0;
   }
 
+
+// TBD!   What is the target voltage when everythink is balanced ?
   if (BMS_GetMinCellVoltage(mLemon.Bms1) >= CELL_TARGET_MV && BMS_GetMinCellVoltage(mLemon.Bms2) >= CELL_TARGET_MV)  // All cells reached minimal voltage -> balanced today
   {
     mLemon.BalancedTodayFlag = 1;
@@ -169,7 +199,7 @@ static void CalculateOptimalCharging(void)
   {
     mLemon.Internal.MaxCellVoltage_mV = mLemon.Bms2->LiveData.MaxCellVoltage_mV;
   }
-  if ( mLemon.Internal.MaxCellVoltage_mV > CELL_BALANCE_MV)
+  if ( mLemon.Internal.MaxCellVoltage_mV >= CELL_BALANCE_MV)
   {
     mLemon.Storage.OptChargingCurrent = 2 + ((CELL_MAX_MV - mLemon.Internal.MaxCellVoltage_mV) * BalanceSupportFactor);  // equation set by experiments
   }

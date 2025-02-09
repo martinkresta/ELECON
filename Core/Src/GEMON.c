@@ -36,7 +36,8 @@ void GEMON_Update_1s(void)
   // calculate
 
   mGmon.BatEnergy = VAR_GetVariable(VAR_STRG1_ENERGY_WH, &invalid) + VAR_GetVariable(VAR_STRG2_ENERGY_WH, &invalid) ;
-  mGmon.BatVoltage = (VAR_GetVariable(VAR_STRG1_VOLTAGE_V10, &invalid) + VAR_GetVariable(VAR_STRG2_VOLTAGE_V10, &invalid))/20.0 ;
+ // mGmon.BatVoltage = (VAR_GetVariable(VAR_STRG1_VOLTAGE_V10, &invalid) + VAR_GetVariable(VAR_STRG2_VOLTAGE_V10, &invalid))/20.0 ;
+  mGmon.BatVoltage = (VAR_GetVariable(VAR_STRG1_VOLTAGE_V10, &invalid))/10.0 ; // Second storage does not exist yet
   totalCapacity = (VAR_GetVariable(VAR_STRG1_CAPACITY_AH, &invalid) + VAR_GetVariable(VAR_STRG2_CAPACITY_AH, &invalid)) * mGmon.BatVoltage ;
   mGmon.BatPower = VAR_GetVariable(VAR_STRG1_POWER_W, &invalid) + VAR_GetVariable(VAR_STRG2_POWER_W, &invalid) ;
   mGmon.BatCurrent = VAR_GetVariable(VAR_STRG1_CURRENT_A10, &invalid)/10.0 + VAR_GetVariable(VAR_STRG2_CURRENT_A10, &invalid)/10.0 ;
@@ -90,6 +91,9 @@ void GEMON_Update_1s(void)
 
   VAR_SetVariable(VAR_LOAD_W,(int16_t)(mGmon.LoadPower),1);
   VAR_SetVariable(VAR_CONS_TODAY_10WH,(int16_t)(mGmon.LoadCons_Wh), 1);
+  VAR_SetVariable(VAR_LOAD_A100,(int16_t)(100 * mGmon.LoadPower / mGmon.BatVoltage),1);  // Auxiliary value just for WEB visualisation
+
+
 
 }
 
@@ -102,7 +106,7 @@ static void SendBalanceInfo(void)
   uint8_t balancedToday = 0;
   uint16_t OptCurr;
 
-  if(mEutil.Strg1.BalancedToday && mEutil.Strg2.BalancedToday)
+  if(mEutil.Strg1.BalancedToday) // && mEutil.Strg2.BalancedToday)
   {
     balancedToday = 1;
   }
