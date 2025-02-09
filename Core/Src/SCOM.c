@@ -165,7 +165,6 @@ static void InitPcScanList(void)
 	UpdateScanList(VAR_MPPT_MAX_BAT_CURRENT_A10, 3000);
 	UpdateScanList(VAR_MPPT_TEMP_C, 3000);
 
-	UpdateScanList(VAR_MPPT_ENERGY_TODAY_WH, 5000);
 	UpdateScanList(VAR_SHUNT_PCK1_CURRENT_A100, 5000);
 	UpdateScanList(VAR_SHUNT_PCK2_CURRENT_A100, 5000);
 
@@ -260,6 +259,10 @@ static void InitPcScanList(void)
 	UpdateScanList(VAR_CONS_WASCHMACHINE_WH, 3000);
 	UpdateScanList(VAR_CONS_OTHER_WH, 3000);
 	UpdateScanList(VAR_CONS_TECHM_WH, 3000);
+	UpdateScanList(VAR_CONS_AXPERT_WH, 5000);
+	UpdateScanList(VAR_CONS_EVSE_WH, 5000);
+	UpdateScanList(VAR_CONS_WS_HEATING_WH, 5000);
+
 
 	UpdateScanList(VAR_POW_AC300_W, 3000);
 	UpdateScanList(VAR_POW_AC3KW_W, 3000);
@@ -269,6 +272,10 @@ static void InitPcScanList(void)
 	UpdateScanList(VAR_POW_WASCHMACHINE_W, 3000);
 	UpdateScanList(VAR_POW_OTHER_W, 3000);
 	UpdateScanList(VAR_POW_TECHM_W, 3000);
+	UpdateScanList(VAR_POW_AXPERT_W, 5000);
+	UpdateScanList(VAR_POW_EVSE_W, 5000);
+	UpdateScanList(VAR_POW_WS_HEATING_W, 5000);
+
 
 
 	UpdateScanList(VAR_BOILER_POWER, 3000);

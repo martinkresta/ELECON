@@ -77,7 +77,7 @@ void LEMON_Update_1s(void)
   // Storage
   mLemon.Storage.Current = (float)SHUNT_GetIbat_mA() / 1000;
   mLemon.Internal.Avilable_mAs += mLemon.Storage.Current * 1000.0;
-  mLemon.Storage.Voltage = (mLemon.Bms1->LiveData.VoltageTotal_mV + mLemon.Bms1->LiveData.VoltageTotal_mV)/2000.0;  // mV to V
+  mLemon.Storage.Voltage = (mLemon.Bms1->LiveData.VoltageTotal_mV + mLemon.Bms2->LiveData.VoltageTotal_mV)/2000.0;  // mV to V
   mLemon.Storage.Energy = mLemon.Internal.Avilable_mAs * mLemon.Storage.Voltage / AH2MAS;   // Ah * V => Wh
   mLemon.Storage.Power = mLemon.Storage.Current * mLemon.Storage.Voltage;
   mLemon.Storage.Soc = 100 * (mLemon.Internal.Avilable_mAs / AH2MAS) / (mLemon.Internal.TotalCapacity_Ah);  // in percents
@@ -176,8 +176,20 @@ static void CheckFullyCharged(void)
   }
 
 
+  // Get the minimal cell voltage (only from BMSs which are active)
+  mLemon.Internal.MinCellVoltage_mV = 0;
+  if(mLemon.Bms1->Active)
+  {
+    mLemon.Internal.MinCellVoltage_mV = mLemon.Bms1->LiveData.MinCellVoltage_mV;
+  }
+  if(mLemon.Bms2->Active && (mLemon.Bms2->LiveData.MinCellVoltage_mV < mLemon.Internal.MinCellVoltage_mV))
+  {
+    mLemon.Internal.MinCellVoltage_mV = mLemon.Bms2->LiveData.MinCellVoltage_mV;
+  }
+
+
 // TBD!   What is the target voltage when everythink is balanced ?
-  if (BMS_GetMinCellVoltage(mLemon.Bms1) >= CELL_TARGET_MV && BMS_GetMinCellVoltage(mLemon.Bms2) >= CELL_TARGET_MV)  // All cells reached minimal voltage -> balanced today
+  if (mLemon.Internal.MinCellVoltage_mV >= CELL_TARGET_MV)  // All cells reached minimal voltage -> balanced today
   {
     mLemon.BalancedTodayFlag = 1;
     mLemon.Internal.Avilable_mAs = mLemon.Internal.TotalCapacity_Ah * AH2MAS;  // fully charged
