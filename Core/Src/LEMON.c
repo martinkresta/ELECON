@@ -3,6 +3,9 @@
  *
  *  Created on: 7. 2. 2025
  *      Author: marti
+ *      Brief: Local Energy MONitoring
+ *             SW module for monitoring local Storage, PV (production) and Load (consumption)
+ *             - Uses Drivers for accessing BMS, Shunt, MPPT and ACDC inverter
  */
 
 #include "LEMON.h"
@@ -74,9 +77,9 @@ void LEMON_Update_1s(void)
   // Storage
   mLemon.Storage.Current = (float)SHUNT_GetIbat_mA() / 1000;
   mLemon.Internal.Avilable_mAs += mLemon.Storage.Current * 1000.0;
-  mLemon.Internal.AvgBmsVoltage = (mLemon.Bms1->LiveData.VoltageTotal_mV + mLemon.Bms1->LiveData.VoltageTotal_mV)/2000.0;  // mV to V
-  mLemon.Storage.Energy = mLemon.Internal.Avilable_mAs * mLemon.Internal.AvgBmsVoltage / AH2MAS;   // Ah * V => Wh
-  mLemon.Storage.Power = mLemon.Storage.Current * mLemon.Internal.AvgBmsVoltage;
+  mLemon.Storage.Voltage = (mLemon.Bms1->LiveData.VoltageTotal_mV + mLemon.Bms1->LiveData.VoltageTotal_mV)/2000.0;  // mV to V
+  mLemon.Storage.Energy = mLemon.Internal.Avilable_mAs * mLemon.Storage.Voltage / AH2MAS;   // Ah * V => Wh
+  mLemon.Storage.Power = mLemon.Storage.Current * mLemon.Storage.Voltage;
   mLemon.Storage.Soc = 100 * (mLemon.Internal.Avilable_mAs / AH2MAS) / (mLemon.Internal.TotalCapacity_Ah);  // in percents
 
   // Production
@@ -107,9 +110,9 @@ void LEMON_MidnightNow(void)
 
 
 
-void LEMON_UartRxCallback(USART_TypeDef uart, uint16_t reclength)
+void LEMON_UartRxCallback(UART_HandleTypeDef *huart, uint16_t reclength)
 {
-  BMS_UartRxCallback(uart, reclength, mLemon.Bms1, mLemon.Bms2);
+  BMS_UartRxCallback(huart, reclength, mLemon.Bms1, mLemon.Bms2);
 }
 
 
@@ -180,6 +183,7 @@ static void PublishVARs(void)
   VAR_SetVariable(VAR_STRG1_SOC,(int16_t)(mLemon.Storage.Soc * 100), validflag);
   VAR_SetVariable(VAR_STRG1_POWER_W, (int16_t)mLemon.Storage.Power, validflag);
   VAR_SetVariable(VAR_STRG1_CURRENT_A10, (int16_t)(mLemon.Storage.Current * 10), validflag);
+  VAR_SetVariable(VAR_STRG1_VOLTAGE_V10, (int16_t)(mLemon.Storage.Voltage * 10), validflag);
   VAR_SetVariable(VAR_STRG1_ENERGY_WH, (int16_t)mLemon.Storage.Energy, validflag);
   VAR_SetVariable(VAR_STRG1_OPT_CHARGING_A , (int16_t)mLemon.Storage.OptChargingCurrent, validflag);
   VAR_SetVariable(VAR_STRG1_CAPACITY_AH, (int16_t)mLemon.Internal.TotalCapacity_Ah, validflag);

@@ -19,15 +19,17 @@
 #include "SCOM.h"
 #include "COM.h"
 #include "AC.h"
-#include "BMS1.h"
-#include "BMS2.h"
+//#include "BMS1.h"
+//#include "BMS2.h"
 #include "MPPT.h"
-#include "ELECON.h"
+//#include "ELECON.h"
 #include "pwrout.h"
 #include "ELM.h"
 #include "GEST.h"
 #include "ADC.h"
 #include "watchdog.h"
+#include "LEMON.h"
+#include "GEMON.h"
 
 
 
@@ -55,12 +57,15 @@ void APP_Init(void)
 	MCAN_Init(&hcan1, THIS_NODE);
   COM_Init(THIS_NODE);
   AC_Init();
-  BMS1_Init(&huart3);
-  BMS2_Init(&huart2);
+ // BMS1_Init(&huart3);
+ // BMS2_Init(&huart2);
   MPPT_Init(&hlpuart1);
   WDG_Init(3000);
   SHUNT_Init(&hspi1);
-  ELC_Init();
+ // ELC_Init();
+  LEMON_Init(&huart3, &huart2);
+  GEMON_Init();
+
   PWROUT_Init();
   ELM_Init(NUM_OF_ELEMTERS);
   ADC_Init(&hadc1, &hdma_adc1, NUM_OF_ADC_CHANNELS);
@@ -170,7 +175,8 @@ void APP_Update_1s(void)
 	{
 		dayNumber = newDayNumber;
 
-		ELC_MidnightNow();
+		//ELC_MidnightNow();
+		LEMON_MidnightNow();
 		MPPT_MidnightNow();
 		ELM_ResetAllConsumptions();
 	}
@@ -298,12 +304,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	}
 	else if (huart->Instance == huart3.Instance)
 	{
-
-		BMS1_UartRxCallback(huart->RxXferSize - huart->RxXferCount);
+	  LEMON_UartRxCallback(huart, huart->RxXferSize - huart->RxXferCount);
+		//BMS1_UartRxCallback(huart->RxXferSize - huart->RxXferCount);
 	}
 	else if (huart->Instance == huart2.Instance)
 	{
-		BMS2_UartRxCallback(huart->RxXferSize - huart->RxXferCount);
+	  LEMON_UartRxCallback(huart, huart->RxXferSize - huart->RxXferCount);
+		//BMS2_UartRxCallback(huart->RxXferSize - huart->RxXferCount);
 	}
 }
 
@@ -316,11 +323,13 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 	}
 	else if (huart->Instance == huart3.Instance)
 	{
-		BMS1_UartRxCallback(Size);
+	  LEMON_UartRxCallback(huart, Size);
+		//BMS1_UartRxCallback(Size);
 	}
 	else if (huart->Instance == huart2.Instance)
 	{
-		BMS2_UartRxCallback(Size);
+	  LEMON_UartRxCallback(huart, Size);
+		//BMS2_UartRxCallback(Size);
 	}
 
 }

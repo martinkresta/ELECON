@@ -74,9 +74,12 @@
 							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.objcopy.symbolsrec.1456132653" name="MCU Output Converter Motorola S-rec with symbols" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.objcopy.symbolsrec"/>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1570592940.780285837" name="BMS1.h" rcbsApplicability="disable" resourcePath="Core/Inc/BMS1.h" toolsToInvoke=""/>
+					<fileInfo id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1570592940.1227330316" name="ELECON.h" rcbsApplicability="disable" resourcePath="Core/Inc/ELECON.h" toolsToInvoke=""/>
+					<fileInfo id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1570592940.2041155200" name="BMS2.h" rcbsApplicability="disable" resourcePath="Core/Inc/BMS2.h" toolsToInvoke=""/>
 					<sourceEntries>
 						<entry excluding="Src/SENSIRION.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Common"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
+						<entry excluding="Inc/ELECON.h|Src/ELECON.c|Src/BMS1.c|Src/BMS2.c|Inc/BMS2.h|Inc/BMS1.h" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
 					</sourceEntries>
 				</configuration>

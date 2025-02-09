@@ -30,13 +30,14 @@ typedef struct
   float Power;
   float Current;
   float Energy;
+  float Voltage;
   float OptChargingCurrent;
 }sStrg;   // published  values
 
 typedef struct
 {
   uint64_t Avilable_mAs;
-  float AvgBmsVoltage;
+  //float AvgBmsVoltage;
   float TotalCapacity_Ah;
   uint16_t MaxCellVoltage_mV;
   uint16_t MinCellVoltage_mV;
@@ -94,7 +95,7 @@ typedef struct
 void LEMON_Init(UART_HandleTypeDef* huart1, UART_HandleTypeDef* huart2);
 void LEMON_Update_1s(void);
 void LEMON_MidnightNow(void);
-void LEMON_UartRxCallback(USART_TypeDef uart, uint16_t reclength);
+void LEMON_UartRxCallback(UART_HandleTypeDef *huart, uint16_t reclength);
 
 
 

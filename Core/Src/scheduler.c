@@ -10,19 +10,19 @@
 #include "OW.h"
 #include "TEMP.h"
 #include "SCOM.h"
-#include "BMS1.h"
-#include "BMS2.h"
+
 #include "watchdog.h"
 #include "AC.h"
 #include "MCAN.h"
 #include "COM.h"
 #include "MPPT.h"
-#include "ELECON.h"
+//#include "ELECON.h"
 #include "ELM.h"
 #include "APP.h"
 #include "ADC.h"
 #include "BCKPBAT.h"
 #include "LEMON.h"
+#include "GEMON.h"
 
 
 
@@ -261,8 +261,8 @@ static void Timer_Task_250ms(void)
 static void Timer_Task_500ms(void)
 {
 	//HAL_GPIO_TogglePin(LED_B_GPIO_Port,LED_B_Pin);
-	BMS1_Update_500ms();
-	BMS2_Update_500ms();
+//	BMS1_Update_500ms();
+	//BMS2_Update_500ms();
 
 }
 
@@ -277,11 +277,13 @@ static void Timer_Task_1s(void)
 {	
 	WDG_Refresh();
 	AC_Update_1s();
-	ELC_Update_1s();
+	//ELC_Update_1s();
 	APP_Update_1s();
 	ELM_Update_1s();
 	LEMON_Update_1s();
+	GEMON_Update_1s();
 	BCKPBAT_Update_1s();
+
 	//LED_Error_SetMode(eLED_BLINK_ONCE);
 	//	OW_Read(0);
 	//		OW_ConvertAll(0);
