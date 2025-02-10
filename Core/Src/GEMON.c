@@ -87,13 +87,12 @@ void GEMON_Update_1s(void)
   VAR_SetVariable(VAR_BAT_ENERGY_WH,(int16_t)(mGmon.BatEnergy),1);
 
   VAR_SetVariable(VAR_SOLAR_POWER_W,(int16_t)(mGmon.SolarPower),1);
-  VAR_SetVariable(VAR_SOLAR_ENERGY_TODAY_10WH,(int16_t)(mGmon.SolarProd_Wh), 1);
+  VAR_SetVariable(VAR_SOLAR_ENERGY_TODAY_10WH,(int16_t)(mGmon.SolarProd_Wh/10), 1);
+  //VAR_SetVariable(VAR_CHARGING_A10,(int16_t)(10 * mGmon.SolarPower / mGmon.BatVoltage),1);  // !!! WARNING Used by TECHM ELHEATER
 
   VAR_SetVariable(VAR_LOAD_W,(int16_t)(mGmon.LoadPower),1);
-  VAR_SetVariable(VAR_CONS_TODAY_10WH,(int16_t)(mGmon.LoadCons_Wh), 1);
+  VAR_SetVariable(VAR_CONS_TODAY_WH,(int16_t)(mGmon.LoadCons_Wh), 1);
   VAR_SetVariable(VAR_LOAD_A100,(int16_t)(100 * mGmon.LoadPower / mGmon.BatVoltage),1);  // Auxiliary value just for WEB visualisation
-
-
 
 }
 
@@ -104,14 +103,14 @@ static void SendBalanceInfo(void)
   // electric heater load control  (to lower charging current)
   uint8_t txdata[8];
   uint8_t balancedToday = 0;
-  uint16_t OptCurr;
+  int16_t OptCurr;
 
   if(mEutil.Strg1.BalancedToday) // && mEutil.Strg2.BalancedToday)
   {
     balancedToday = 1;
   }
 
-  OptCurr = (uint16_t)mEutil.OptChargeCurrent;
+  OptCurr = (int16_t)mEutil.OptChargeCurrent;
 
   // Send status of balancedtoday and optimal balancing current to TECHM
   txdata[0] = 0;

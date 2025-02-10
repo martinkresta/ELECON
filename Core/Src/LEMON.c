@@ -189,7 +189,7 @@ static void CheckFullyCharged(void)
 
 
 // TBD!   What is the target voltage when everythink is balanced ?
-  if (mLemon.Internal.MinCellVoltage_mV >= CELL_TARGET_MV)  // All cells reached minimal voltage -> balanced today
+  if (mLemon.Internal.MinCellVoltage_mV >= CELL_BALANCE_MV)  // All cells reached minimal voltage -> balanced today
   {
     mLemon.BalancedTodayFlag = 1;
     mLemon.Internal.Avilable_mAs = mLemon.Internal.TotalCapacity_Ah * AH2MAS;  // fully charged
