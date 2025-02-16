@@ -31,7 +31,7 @@ void LEMON_Init(UART_HandleTypeDef* huart1, UART_HandleTypeDef* huart2)
   mLemon.Bms2 = &mBms2;
 
   // Configuration
-  mLemon.Cfg.Pack1_Ah = 80;          // CONFIGURE!!!
+  mLemon.Cfg.Pack1_Ah = 0; //80;          // CONFIGURE!!!
   mLemon.Cfg.Pack2_Ah = 220;
   mLemon.Cfg.Shunt_R_uOhm = 250;  // not used so far
 
@@ -61,7 +61,6 @@ void LEMON_Update_1s(void)
   BMS_Update(mLemon.Bms1);
   BMS_Update(mLemon.Bms2);
 
-  //MPPT_Update_1s();
 
   // Check if SOC initialization is needed
   if(!mLemon.SocInitialized)
@@ -75,9 +74,10 @@ void LEMON_Update_1s(void)
 
   // Calculate
   // Storage
-  mLemon.Storage.Current = (float)SHUNT_GetIbat_mA() / 1000;
+  mLemon.Storage.Current = (float)(SHUNT_GetIbat_mA() / 1000.0);
   mLemon.Internal.Avilable_mAs += mLemon.Storage.Current * 1000.0;
-  mLemon.Storage.Voltage = (mLemon.Bms1->LiveData.VoltageTotal_mV + mLemon.Bms2->LiveData.VoltageTotal_mV)/2000.0;  // mV to V
+ // mLemon.Storage.Voltage = (mLemon.Bms1->LiveData.VoltageTotal_mV + mLemon.Bms2->LiveData.VoltageTotal_mV)/2000.0;  // mV to V
+  mLemon.Storage.Voltage = (mLemon.Bms2->LiveData.VoltageTotal_mV)/1000.0;  // mV to V
   mLemon.Storage.Energy = mLemon.Internal.Avilable_mAs * mLemon.Storage.Voltage / AH2MAS;   // Ah * V => Wh
   mLemon.Storage.Power = mLemon.Storage.Current * mLemon.Storage.Voltage;
   mLemon.Storage.Soc = 100 * (mLemon.Internal.Avilable_mAs / AH2MAS) / (mLemon.Internal.TotalCapacity_Ah);  // in percents

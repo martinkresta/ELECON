@@ -40,7 +40,7 @@ void GEMON_Update_1s(void)
   mGmon.BatVoltage = (VAR_GetVariable(VAR_STRG1_VOLTAGE_V10, &invalid))/10.0 ; // Second storage does not exist yet
   totalCapacity = (VAR_GetVariable(VAR_STRG1_CAPACITY_AH, &invalid) + VAR_GetVariable(VAR_STRG2_CAPACITY_AH, &invalid)) * mGmon.BatVoltage ;
   mGmon.BatPower = VAR_GetVariable(VAR_STRG1_POWER_W, &invalid) + VAR_GetVariable(VAR_STRG2_POWER_W, &invalid) ;
-  mGmon.BatCurrent = VAR_GetVariable(VAR_STRG1_CURRENT_A10, &invalid)/10.0 + VAR_GetVariable(VAR_STRG2_CURRENT_A10, &invalid)/10.0 ;
+  mGmon.BatCurrent = (VAR_GetVariable(VAR_STRG1_CURRENT_A10, &invalid)/10.0) + (VAR_GetVariable(VAR_STRG2_CURRENT_A10, &invalid)/10.0) ;
   mGmon.BatSoc =  100 *  mGmon.BatEnergy / totalCapacity;
   mGmon.LoadPower = VAR_GetVariable(VAR_LLOAD1_POWER_W, &invalid) + VAR_GetVariable(VAR_LLOAD2_POWER_W, &invalid) ;
   mGmon.LoadCons_Wh = VAR_GetVariable(VAR_LLOAD1_CONS_WH, &invalid) + VAR_GetVariable(VAR_LLOAD2_CONS_WH, &invalid) ;
