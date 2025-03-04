@@ -70,6 +70,8 @@ typedef struct
 void SCOM_Init(UART_HandleTypeDef* uart);
 void SCOM_Update_10ms(void);
 
+void SCOM_SendMsg(uint8_t* data, uint8_t size);
+
 void SCOM_Transmit(void);
 
 void SCOM_UartTxCallback();

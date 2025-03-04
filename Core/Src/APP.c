@@ -27,6 +27,7 @@
 #include "watchdog.h"
 #include "LEMON.h"
 #include "GEMON.h"
+#include "LOG.h"
 
 
 
@@ -147,6 +148,8 @@ void APP_Start(void)
 
 	MCAN_Start();
 
+	LOG_Startup();
+
 	while (1)   // endless loop
 	{
 		Scheduler_Check_Flag();
@@ -237,6 +240,9 @@ static void ProcessMessage(s_CanRxMsg* msg)
 			unixtime |= msg->data[3];
 			RTC_SetUnixTime(unixtime);
 			break;
+		case CMD_LOG_MSG:  // Send log msg to RPI
+		  SCOM_SendMsg(msg->data,8);
+		  break;
 	}
 	// TBD change cobID ! and put it to switch case
 	if (msg->header.StdId == CMD_RPI_RTC_SYNC)

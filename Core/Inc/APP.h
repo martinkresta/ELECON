@@ -15,6 +15,7 @@
 
 // CAN node ID
 #define THIS_NODE				NODEID_ELECON
+#define LOG_MASTER_NODE
 
 
 #define NUM_OF_ELEMTERS			3

@@ -121,6 +121,13 @@ void SCOM_Update_10ms(void)
 	}
 }
 
+
+void SCOM_SendMsg(uint8_t* data, uint8_t size)
+{
+  Send(data, size);
+}
+
+
 /* private methods */
 
 
