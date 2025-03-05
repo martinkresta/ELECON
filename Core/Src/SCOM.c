@@ -16,6 +16,7 @@
 #include "RPISERP.h"
 #include "RTC.h"
 #include "APP.h"
+#include <string.h>
 
 
 typedef struct
@@ -46,7 +47,6 @@ uint16_t mNsSendTimer;  // timer for sending network status
 static void UpdateScanList(uint16_t varId, uint16_t period);
 static void SendVariable(uint16_t id);
 static void InitPcScanList(void);
-static uint8_t Send(uint8_t* data, uint8_t length);
 static void ProcessMessage(void);
 
 void SCOM_Init(UART_HandleTypeDef* uart)
@@ -124,7 +124,18 @@ void SCOM_Update_10ms(void)
 
 void SCOM_SendMsg(uint8_t* data, uint8_t size)
 {
-  Send(data, size);
+  RSP_Send(data, size);
+}
+
+void SCOM_SendLogMsg(uint8_t* data, uint8_t size)
+{
+  uint8_t scomLogData[10];
+  memset(scomLogData,0,10);
+
+  scomLogData[0] = CMD_LOG_MSG >> 8;
+  scomLogData[1] = CMD_LOG_MSG & 0xFF;
+  memcpy(&(scomLogData[2]), data,size);
+  SCOM_SendMsg(scomLogData,10);
 }
 
 
@@ -407,14 +418,6 @@ static void InitPcScanList(void)
 
 }
 
-//returns 0 when OK, 1 if transceiver is busy
-static uint8_t Send(uint8_t* data, uint8_t length)
-{
-
-	RSP_Send(data, length);
-
-	return 0;
-}
 
 static void UpdateScanList(uint16_t varId, uint16_t period)
 {
@@ -470,7 +473,7 @@ static void SendVariable(uint16_t id)
 	msg.data[5] = tmp & 0xFF;
 	msg.data[6] = validflag >> 8;
 	msg.data[7] = validflag & 0xFF;
-	Send(msg.data, 8);
+	RSP_Send(msg.data, 8);
 }
 
 static void ProcessMessage(void)
@@ -479,11 +482,11 @@ static void ProcessMessage(void)
 		uint16_t id = (mRxBuffer[0]<<8) | mRxBuffer[1];
 		uint32_t unixtime = 0;
 
-		uint16_t data1, data2, data3, data4;
+		uint16_t data1, data2;// data3, data4;
 		data1 = (mRxBuffer[2]<<8) | mRxBuffer[3];
 		data2 = (mRxBuffer[4]<<8) | mRxBuffer[5];
-		data3 = (mRxBuffer[6]<<8) | mRxBuffer[7];
-		data4 = (mRxBuffer[8]<<8) | mRxBuffer[9];
+	//	data3 = (mRxBuffer[6]<<8) | mRxBuffer[7];
+	//	data4 = (mRxBuffer[8]<<8) | mRxBuffer[9];
 
 		switch (id )  // message ID
 		{

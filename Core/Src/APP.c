@@ -241,7 +241,7 @@ static void ProcessMessage(s_CanRxMsg* msg)
 			RTC_SetUnixTime(unixtime);
 			break;
 		case CMD_LOG_MSG:  // Send log msg to RPI
-		  SCOM_SendMsg(msg->data,8);
+		  SCOM_SendLogMsg(msg->data,8);
 		  break;
 	}
 	// TBD change cobID ! and put it to switch case
