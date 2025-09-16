@@ -1,11 +1,47 @@
-# object files/ etc
+# ==========================
+# CubeIDE / Eclipse settings
+# ==========================
+.settings/
+.project
+.cproject
+
+# ==========================
+# Build outputs
+# ==========================
 Debug/
-.settings/*.*
-*.d
+Release/
 *.o
-*.su
-!*.bin
-!*.hex
+*.d
 *.elf
 *.map
+*.su
+
+# ==========================
+# Firmware binaries (keep these)
+# ==========================
+!*.bin
+!*.hex
+
+# ==========================
+# Backup / temp
+# ==========================
 *.bak
+*~
+*.swp
+
+# ==========================
+# Subtree libraries build outputs
+# ==========================
+# Assuming your subtree is in libs/common
+libs/common/Debug/
+libs/common/Release/
+libs/common/*.o
+libs/common/*.d
+libs/common/*.elf
+libs/common/*.map
+libs/common/*.su
+
+# ==========================
+# Optional: ignore other generated files
+# ==========================
+*.log
