@@ -35,6 +35,8 @@ s_CanRxMsg rmsg;
 
 static uint16_t RpiHB_Timer;
 
+static uint32_t mAppUpTime;
+
 static void ProcessMessage(s_CanRxMsg* msg);
 static void ExtLightControl(void);
 
@@ -190,6 +192,8 @@ void APP_Update_1s(void)
     UI_LED_B_SetMode(eUI_BLINKING_FAST);  // signal missingRPI HB
     UI_LED_R_SetMode(eUI_ON);  // signal missingRPI HB latch
   }
+
+  mAppUpTime++;
 }
 
 
@@ -243,6 +247,23 @@ static void ProcessMessage(s_CanRxMsg* msg)
 		case CMD_LOG_MSG:  // Send log msg to RPI
 		  SCOM_SendLogMsg(msg->data,8);
 		  break;
+    case CMD_SYSINFO_REQ:
+      if(msg->data[0] == COM_GetNodeId())
+      {
+         switch (msg->data[1])
+         {
+           case esit_ASW_version:
+             COM_SendSysInfo(esit_ASW_version, (uint32_t)ASW_VERSION);
+             break;
+           case esit_UpTime:
+             COM_SendSysInfo(esit_UpTime, mAppUpTime);
+             break;
+           case esit_HWID:
+             COM_SendSysInfo(esit_HWID, (uint32_t)HWID);
+             break;
+         }
+      }
+      break;
 	}
 	// TBD change cobID ! and put it to switch case
 	if (msg->header.StdId == CMD_RPI_RTC_SYNC)
