@@ -77,6 +77,13 @@ void LEMON_Update_1s(void)
   mLemon.Storage.Current = (float)(SHUNT_GetIbat_mA() / 1000.0);
   mLemon.Internal.Avilable_mAs += mLemon.Storage.Current * 1000.0;
  // mLemon.Storage.Voltage = (mLemon.Bms1->LiveData.VoltageTotal_mV + mLemon.Bms2->LiveData.VoltageTotal_mV)/2000.0;  // mV to V
+
+  // limit 100%
+  if((mLemon.Internal.Avilable_mAs/AH2MAS) > (mLemon.Internal.TotalCapacity_Ah))
+  {
+    mLemon.Internal.Avilable_mAs = (mLemon.Internal.TotalCapacity_Ah * AH2MAS);
+  }
+
   mLemon.Storage.Voltage = (mLemon.Bms2->LiveData.VoltageTotal_mV)/1000.0;  // mV to V
   mLemon.Storage.Energy = mLemon.Internal.Avilable_mAs * mLemon.Storage.Voltage / AH2MAS;   // Ah * V => Wh
   mLemon.Storage.Power = mLemon.Storage.Current * mLemon.Storage.Voltage;

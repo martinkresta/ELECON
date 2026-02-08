@@ -2,8 +2,8 @@
 # CubeIDE / Eclipse settings
 # ==========================
 .settings/
-.project
-.cproject
+#.project
+#.cproject
 
 # ==========================
 # Build outputs
