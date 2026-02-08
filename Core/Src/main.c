@@ -106,6 +106,7 @@ int main(void)
   SCB->VTOR = ADDRESS_OF_DEFAULT_APP_START;
   __DSB();
   __ISB();
+  __enable_irq();   // clears PRIMASK
 
   /* USER CODE END 1 */
 
