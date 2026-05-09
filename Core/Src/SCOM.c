@@ -172,6 +172,12 @@ static void InitPcScanList(void)
 	UpdateScanList(VAR_BMS2_ENERGY_STORED_WH, 3000);
 	UpdateScanList(VAR_BMS2_TODAY_ENERGY_WH, 3000);
 
+	UpdateScanList(VAR_BMS3_SOC, 1000);
+	UpdateScanList(VAR_BMS3_CURRENT_A10, 3000);
+	UpdateScanList(VAR_BMS3_VOLTAGE_V10, 3000);
+	UpdateScanList(VAR_BMS3_ENERGY_STORED_WH, 3000);
+	UpdateScanList(VAR_BMS3_TODAY_ENERGY_WH, 3000);
+
 	UpdateScanList(VAR_MPPT_BAT_CURRENT_A10, 1000);
 	UpdateScanList(VAR_MPPT_BAT_VOLTAGE_V100, 1000);
 	UpdateScanList(VAR_MPPT_YIELD_TODAY_10WH, 3000);
@@ -415,6 +421,39 @@ static void InitPcScanList(void)
 	UpdateScanList(VAR_BMS2_CELL14_C, 3000);
 	UpdateScanList(VAR_BMS2_CELL15_C, 3000);
 	UpdateScanList(VAR_BMS2_CELL16_C, 3000);
+
+	UpdateScanList(VAR_BMS3_CELL1_MV, 3000);
+	UpdateScanList(VAR_BMS3_CELL2_MV, 3000);
+	UpdateScanList(VAR_BMS3_CELL3_MV, 3000);
+	UpdateScanList(VAR_BMS3_CELL4_MV, 3000);
+	UpdateScanList(VAR_BMS3_CELL5_MV, 3000);
+	UpdateScanList(VAR_BMS3_CELL6_MV, 3000);
+	UpdateScanList(VAR_BMS3_CELL7_MV, 3000);
+	UpdateScanList(VAR_BMS3_CELL8_MV, 3000);
+	UpdateScanList(VAR_BMS3_CELL9_MV, 3000);
+	UpdateScanList(VAR_BMS3_CELL10_MV, 3000);
+	UpdateScanList(VAR_BMS3_CELL11_MV, 3000);
+	UpdateScanList(VAR_BMS3_CELL12_MV, 3000);
+	UpdateScanList(VAR_BMS3_CELL13_MV, 3000);
+	UpdateScanList(VAR_BMS3_CELL14_MV, 3000);
+	UpdateScanList(VAR_BMS3_CELL15_MV, 3000);
+	UpdateScanList(VAR_BMS3_CELL16_MV, 3000);
+	UpdateScanList(VAR_BMS3_CELL1_C, 3000);
+	UpdateScanList(VAR_BMS3_CELL2_C, 3000);
+	UpdateScanList(VAR_BMS3_CELL3_C, 3000);
+	UpdateScanList(VAR_BMS3_CELL4_C, 3000);
+	UpdateScanList(VAR_BMS3_CELL5_C, 3000);
+	UpdateScanList(VAR_BMS3_CELL6_C, 3000);
+	UpdateScanList(VAR_BMS3_CELL7_C, 3000);
+	UpdateScanList(VAR_BMS3_CELL8_C, 3000);
+	UpdateScanList(VAR_BMS3_CELL9_C, 3000);
+	UpdateScanList(VAR_BMS3_CELL10_C, 3000);
+	UpdateScanList(VAR_BMS3_CELL11_C, 3000);
+	UpdateScanList(VAR_BMS3_CELL12_C, 3000);
+	UpdateScanList(VAR_BMS3_CELL13_C, 3000);
+	UpdateScanList(VAR_BMS3_CELL14_C, 3000);
+	UpdateScanList(VAR_BMS3_CELL15_C, 3000);
+	UpdateScanList(VAR_BMS3_CELL16_C, 3000);
 
 }
 

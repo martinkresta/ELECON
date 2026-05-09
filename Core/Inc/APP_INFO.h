@@ -9,7 +9,7 @@
 
 
 // values are parsed by python script ! do not change define
-#define  ASW_VERSION      101
+#define  ASW_VERSION      110
 
 #define  HWID             0x101
 #define  DEVICE_STR       "ELECON"

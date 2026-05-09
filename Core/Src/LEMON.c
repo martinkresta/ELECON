@@ -31,7 +31,7 @@ void LEMON_Init(UART_HandleTypeDef* huart1, UART_HandleTypeDef* huart2)
   mLemon.Bms2 = &mBms2;
 
   // Configuration
-  mLemon.Cfg.Pack1_Ah = 0; //80;          // CONFIGURE!!!
+  mLemon.Cfg.Pack1_Ah = 80;
   mLemon.Cfg.Pack2_Ah = 220;
   mLemon.Cfg.Shunt_R_uOhm = 250;  // not used so far
 
