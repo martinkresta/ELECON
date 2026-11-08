@@ -15,15 +15,25 @@
 
 
 
-CB_handle mTransmitFifo;
 CB_handle mReceiveFifo;
+
+// TX FIFO: ring of whole RPISERP frames. Producer = main loop (RSP_Send), consumer =
+// main loop (RSP_TransmitFromFifo) and the UART TC interrupt (chains the next frame).
+// Every access to the indices is done with interrupts disabled.
+static uint8_t mTxFifo[RSP_TX_FIFO_SIZE][RSP_PACKET_SIZE];
+static uint8_t mTxHead;
+static uint8_t mTxTail;
+static uint8_t mTxCount;
+
+volatile uint32_t gRspTxOverflow;   // frames dropped because the TX FIFO was full (debug variable)
+volatile uint32_t gRspTxFrames;     // frames handed to the UART (debug variable)
 
 
 UART_HandleTypeDef* mRspUart;
 DMA_Channel_TypeDef* mTxDma;
 DMA_Channel_TypeDef* mRxDma;
 
-bool mTxBusy;
+volatile bool mTxBusy;   // written from main loop and interrupts
 bool mRxBusy;
 
 uint8_t mRxData[RSP_PACKET_SIZE];
@@ -33,6 +43,7 @@ uint8_t mTxData[RSP_PACKET_SIZE];
 void InitUartPeripheral(void);
 void StartReciever(void);
 void StartTransmiter(uint8_t size);
+static void TryStartTx(void);
 uint8_t Checksum(uint8_t* data, uint8_t length);
 
 
@@ -46,11 +57,9 @@ void RSP_Init(UART_HandleTypeDef* Uart, DMA_Channel_TypeDef* TxDma, DMA_Channel_
   mRxDma = RxDma;
 
 
-  mTransmitFifo = CB_Create(RSP_PACKET_SIZE, 10);
-  if (mTransmitFifo == NULL)
-  {
-     // TBD error
-  }
+  mTxHead = 0;
+  mTxTail = 0;
+  mTxCount = 0;
   mReceiveFifo = CB_Create(RSP_PACKET_SIZE, 10);
   if (mReceiveFifo == NULL)
   {
@@ -94,7 +103,21 @@ void RSP_Send(uint8_t* data, uint8_t length)
     txPacket[2] = length;
     memcpy(&(txPacket[3]), data, length);
     txPacket[length + 3] = Checksum(txPacket, length +3 );
-    CB_Put(mTransmitFifo, txPacket);
+
+    uint32_t primask = __get_PRIMASK();
+    __disable_irq();
+    if (mTxCount < RSP_TX_FIFO_SIZE)
+    {
+      memcpy(mTxFifo[mTxHead], txPacket, RSP_PACKET_SIZE);
+      mTxHead = (mTxHead + 1) % RSP_TX_FIFO_SIZE;
+      mTxCount++;
+    }
+    else
+    {
+      gRspTxOverflow++;   // FIFO full: the new frame is dropped
+    }
+    TryStartTx();   // start immediately if the transmitter is idle
+    __set_PRIMASK(primask);
   }
   else
   {
@@ -103,18 +126,35 @@ void RSP_Send(uint8_t* data, uint8_t length)
 }
 
 
-// function to be called periodically from the scheduler (i.e every 5ms)
-void RSP_TransmitFromFifo(void)
+// Starts the next frame from the FIFO if the transmitter is idle.
+// Must be called with interrupts disabled (or from the UART interrupt).
+static void TryStartTx(void)
 {
-  if(mTxBusy == true)  // if transmitter is busy return
+  if (mTxBusy == true || mTxCount == 0)
   {
     return;
   }
+  memcpy(mTxData, mTxFifo[mTxTail], RSP_PACKET_SIZE);
+  mTxTail = (mTxTail + 1) % RSP_TX_FIFO_SIZE;
+  mTxCount--;
+  gRspTxFrames++;
+  StartTransmiter(mTxData[2] + 4); // size = num of databytes + 2 header bytes + length byte + checksum
+}
 
-  if(0 == CB_Get(mTransmitFifo, mTxData))  // if some packet is found in Tx fifo
-  {
-    StartTransmiter(mTxData[2] + 4); // size = num of databytes + 2 header bytes + length byte + checksum
-  }
+
+// Frames are chained on UART TX-complete; this periodic call (scheduler) only kicks an idle transmitter.
+void RSP_TransmitFromFifo(void)
+{
+  uint32_t primask = __get_PRIMASK();
+  __disable_irq();
+  TryStartTx();
+  __set_PRIMASK(primask);
+}
+
+
+uint32_t RSP_GetTxOverflowCount(void)
+{
+  return gRspTxOverflow;
 }
 
 
@@ -217,6 +257,7 @@ void USART1_IRQHandler(void)
   {
     mRspUart->Instance->ICR = USART_ICR_TCCF; // clear the TC flag
     mTxBusy = false;
+    TryStartTx();   // chain the next frame without waiting for the scheduler
   }
 }
 
@@ -225,7 +266,7 @@ void DMA1_Channel4_IRQHandler(void)
 {
   mTxDma->CCR &= ~DMA_CCR_EN;  // disable the interrupt
   DMA1->IFCR |= DMA_IFCR_CGIF4;  // clear all DMA flags
-  mTxBusy = false;
+  // mTxBusy is released by the UART TC interrupt (last byte physically shifted out)
 }
 
 /* RX DMA*/
