@@ -1,0 +1,6 @@
+DEVICE        : ELECON
+SW VERSION    : v001.13
+BUILD TIME    : 08.11.2026 13:04:25
+CRC           : 0x66F07415
+HWID          : 0x00000101
+SIZE          : 92444 B
