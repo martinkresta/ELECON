@@ -18,6 +18,7 @@
 
 
 #define RSP_PACKET_SIZE 14
+#define RSP_TX_FIFO_SIZE 64   // frames
 #define RSP_BAUD_RATE 115200
 
 #define  RSP_MSG_START_B1             0x7F
@@ -31,6 +32,9 @@ void RSP_Send(uint8_t* data, uint8_t length);
 // function to be called periodically from the scheduler (i.e every 5ms)
 void RSP_TransmitFromFifo(void);
 
+
+// number of frames dropped because of a full TX FIFO since start
+uint32_t RSP_GetTxOverflowCount(void);
 
 bool RSP_GetMessage(uint8_t* data, uint8_t* length);
 

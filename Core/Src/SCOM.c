@@ -15,6 +15,7 @@
 #include "UI.h"
 #include "RPISERP.h"
 #include "RTC.h"
+#include "VARS2.h"
 #include "APP.h"
 #include <string.h>
 
@@ -48,6 +49,7 @@ static void UpdateScanList(uint16_t varId, uint16_t period);
 static void SendVariable(uint16_t id);
 static void InitPcScanList(void);
 static void ProcessMessage(void);
+static void TunnelVars2Frame(uint16_t cobId, const uint8_t* data8);
 
 void SCOM_Init(UART_HandleTypeDef* uart)
 {
@@ -57,6 +59,9 @@ void SCOM_Init(UART_HandleTypeDef* uart)
 	InitPcScanList();
 
 	RSP_Init(uart,hdma_usart1_tx.Instance, hdma_usart1_rx.Instance);
+
+	// VARS2 tunnel to the RPi (spec sec.7): every VARS2 frame received from / sent to CAN
+	VARS2_SetFrameHook(TunnelVars2Frame);
 
 }
 
@@ -109,6 +114,9 @@ void SCOM_Update_10ms(void)
 	}
 
 
+	// ELECON-local VARS2 variables that are not on CAN: tunnel only
+	VARS2_UpdateLocal_10ms(TunnelVars2Frame);
+
 	RSP_TransmitFromFifo();   // transmit physically;
 	//SCOM_Transmit();
 
@@ -140,6 +148,18 @@ void SCOM_SendLogMsg(uint8_t* data, uint8_t size)
 
 
 /* private methods */
+
+
+// VARS2 tunnel: RPISERP packet id = CAN COB-ID (0x180 + producer), data = the 8 CAN data bytes unchanged
+static void TunnelVars2Frame(uint16_t cobId, const uint8_t* data8)
+{
+	uint8_t msg[10];
+
+	msg[0] = cobId >> 8;
+	msg[1] = cobId & 0xFF;
+	memcpy(&msg[2], data8, 8);
+	RSP_Send(msg, 10);
+}
 
 
 // Compile-time initialization of list of variables periodically sent toi the PC app
