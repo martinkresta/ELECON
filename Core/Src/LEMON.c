@@ -249,44 +249,44 @@ static void PublishVARs(void)
   // Publish BMS1
   if(mLemon.Bms1->Active)
   {
-     VAR_SetVariable(VAR_BMS1_VOLTAGE_V10, mLemon.Bms1->LiveData.VoltageTotal_mV/100, validflag);
-     VAR_SetVariable(VAR_BMS1_SOC, mLemon.Bms1->LiveData.SOC, validflag);
-     VAR_SetVariable(VAR_BMS1_CURRENT_A10, mLemon.Bms1->LiveData.BatteryCurrent_mA/100, validflag);
-     VAR_SetVariable(VAR_BMS1_ENERGY_STORED_WH, mLemon.Bms1->LiveData.Energystored_Wh, validflag);
-     VAR_SetVariable(VAR_BMS1_TODAY_ENERGY_WH, mLemon.Bms1->LiveData.TodayCharging_Wh, validflag);
+     VAR_SetVariable(VAR_BMS3_VOLTAGE_V10, mLemon.Bms1->LiveData.VoltageTotal_mV/100, validflag);
+     VAR_SetVariable(VAR_BMS3_SOC, mLemon.Bms1->LiveData.SOC, validflag);
+     VAR_SetVariable(VAR_BMS3_CURRENT_A10, mLemon.Bms1->LiveData.BatteryCurrent_mA/100, validflag);
+     VAR_SetVariable(VAR_BMS3_ENERGY_STORED_WH, mLemon.Bms1->LiveData.Energystored_Wh, validflag);
+     VAR_SetVariable(VAR_BMS3_TODAY_ENERGY_WH, mLemon.Bms1->LiveData.TodayCharging_Wh, validflag);
 
-     VAR_SetVariable(VAR_BMS1_CELL1_MV, mLemon.Bms1->Cells[0].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL2_MV, mLemon.Bms1->Cells[1].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL3_MV, mLemon.Bms1->Cells[2].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL4_MV, mLemon.Bms1->Cells[3].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL5_MV, mLemon.Bms1->Cells[4].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL6_MV, mLemon.Bms1->Cells[5].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL7_MV, mLemon.Bms1->Cells[6].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL8_MV, mLemon.Bms1->Cells[7].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL9_MV, mLemon.Bms1->Cells[8].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL10_MV, mLemon.Bms1->Cells[9].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL11_MV, mLemon.Bms1->Cells[10].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL12_MV, mLemon.Bms1->Cells[11].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL13_MV, mLemon.Bms1->Cells[12].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL14_MV, mLemon.Bms1->Cells[13].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL15_MV, mLemon.Bms1->Cells[14].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL16_MV, mLemon.Bms1->Cells[15].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL1_C, mLemon.Bms1->Cells[0].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL2_C, mLemon.Bms1->Cells[1].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL3_C, mLemon.Bms1->Cells[2].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL4_C, mLemon.Bms1->Cells[3].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL5_C, mLemon.Bms1->Cells[4].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL6_C, mLemon.Bms1->Cells[5].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL7_C, mLemon.Bms1->Cells[6].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL8_C, mLemon.Bms1->Cells[7].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL9_C, mLemon.Bms1->Cells[8].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL10_C,mLemon.Bms1-> Cells[9].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL11_C, mLemon.Bms1->Cells[10].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL12_C, mLemon.Bms1->Cells[11].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL13_C, mLemon.Bms1->Cells[12].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL14_C, mLemon.Bms1->Cells[13].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL15_C, mLemon.Bms1->Cells[14].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS1_CELL16_C, mLemon.Bms1->Cells[15].Temp_C, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL1_MV, mLemon.Bms1->Cells[0].Voltage_mV, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL2_MV, mLemon.Bms1->Cells[1].Voltage_mV, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL3_MV, mLemon.Bms1->Cells[2].Voltage_mV, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL4_MV, mLemon.Bms1->Cells[3].Voltage_mV, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL5_MV, mLemon.Bms1->Cells[4].Voltage_mV, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL6_MV, mLemon.Bms1->Cells[5].Voltage_mV, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL7_MV, mLemon.Bms1->Cells[6].Voltage_mV, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL8_MV, mLemon.Bms1->Cells[7].Voltage_mV, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL9_MV, mLemon.Bms1->Cells[8].Voltage_mV, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL10_MV, mLemon.Bms1->Cells[9].Voltage_mV, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL11_MV, mLemon.Bms1->Cells[10].Voltage_mV, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL12_MV, mLemon.Bms1->Cells[11].Voltage_mV, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL13_MV, mLemon.Bms1->Cells[12].Voltage_mV, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL14_MV, mLemon.Bms1->Cells[13].Voltage_mV, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL15_MV, mLemon.Bms1->Cells[14].Voltage_mV, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL16_MV, mLemon.Bms1->Cells[15].Voltage_mV, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL1_C, mLemon.Bms1->Cells[0].Temp_C, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL2_C, mLemon.Bms1->Cells[1].Temp_C, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL3_C, mLemon.Bms1->Cells[2].Temp_C, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL4_C, mLemon.Bms1->Cells[3].Temp_C, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL5_C, mLemon.Bms1->Cells[4].Temp_C, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL6_C, mLemon.Bms1->Cells[5].Temp_C, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL7_C, mLemon.Bms1->Cells[6].Temp_C, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL8_C, mLemon.Bms1->Cells[7].Temp_C, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL9_C, mLemon.Bms1->Cells[8].Temp_C, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL10_C,mLemon.Bms1-> Cells[9].Temp_C, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL11_C, mLemon.Bms1->Cells[10].Temp_C, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL12_C, mLemon.Bms1->Cells[11].Temp_C, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL13_C, mLemon.Bms1->Cells[12].Temp_C, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL14_C, mLemon.Bms1->Cells[13].Temp_C, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL15_C, mLemon.Bms1->Cells[14].Temp_C, validflag);
+     VAR_SetVariable(VAR_BMS3_CELL16_C, mLemon.Bms1->Cells[15].Temp_C, validflag);
   }
 
   // Publish BMS2
