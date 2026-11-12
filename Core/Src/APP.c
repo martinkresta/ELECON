@@ -262,6 +262,9 @@ static void ProcessMessage(s_CanRxMsg* msg)
            case esit_HWID:
              COM_SendSysInfo(esit_HWID, (uint32_t)HWID);
              break;
+             default:   // CAN diagnostics (esit_Can*), handled in UHA_COMMON
+               COM_SendSysInfoCommon(msg->data[1]);
+               break;
          }
       }
       break;
