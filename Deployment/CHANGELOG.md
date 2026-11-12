@@ -2,6 +2,17 @@
 
 Newest version first. Versions before v001.11 are not listed.
 
+## v001.15 (2026-11-12)
+
+- Task: GEMON invalid propagation (`ASW_ELECON/tasks/gemon_invalid_propagation.md`), branch `feature/gemon_invalid_propagation`
+- CRC: `0x5DBA943D`
+- Based on v001.14.
+
+- GEMON publishes its outputs with the validity of their inputs, in three groups: battery (`STRG1/2_ENERGY_WH`, `_VOLTAGE_V10`, `_CAPACITY_AH`, `_POWER_W`, `_CURRENT_A10` -> `BAT_*`), solar (`LPV1/2_*` -> `SOLAR_POWER_W`, `SOLAR_ENERGY_TODAY_10WH`), load (`LLOAD1/2_*` -> `LOAD_W`, `CONS_TODAY_10WH`, `LOAD_A100`; `LOAD_A100` is also invalid when battery is invalid). Before: always `valid = 1`.
+- Battery group is also invalid when total capacity or voltage <= 0 (division by zero / inf-NaN cast).
+- An invalid group is published with `valid = 0` and its last valid values (0 before the first valid computation). Fixes the 2026-11-12 case: during an ELECON_D reboot `STRG2_*` zeros gave `BAT_SOC` ~112 % published as valid; now the last SOC is kept, flagged invalid (TECHM heater -> invalid inputs, RECU -> safe fan configuration).
+- Optimal charging current / `CMD_BALANCE_INFO` unchanged, computed from the last valid battery values. Values unchanged while all inputs are valid.
+
 ## v001.14 (2026-11-12)
 
 - Task: CAN TX stall of 2026-11-12 (`UHA_COMMON/VarDefs/can_tx_stall_2026-11-12.md`), branch `feature/can_tx_supervision`
