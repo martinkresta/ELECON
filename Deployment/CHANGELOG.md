@@ -2,6 +2,18 @@
 
 Newest version first. Versions before v001.11 are not listed.
 
+## v001.14 (2026-11-12)
+
+- Task: CAN TX stall of 2026-11-12 (`UHA_COMMON/VarDefs/can_tx_stall_2026-11-12.md`), branch `feature/can_tx_supervision`
+- CRC: `0x31795646`
+- Based on v001.13.
+
+- CAN automatic bus-off recovery (ABOM) enabled (`.ioc`, `main.c`, and forced in `MCAN_Init()`); it was disabled, so a bus-off lasted until reset.
+- TX supervision in MCAN: frames pending and no successful transmission for 3 s, or no successful transmission at all for 12 s → abort mailboxes, CAN init-mode cycle, HAL state repair. After 5 failed recoveries in a row → `NVIC_SystemReset()` (STARTUP byte 3 = 30).
+- New eleError reports, sent over SCOM (so they reach the RPi even while CAN TX is dead) as `0x620 [4, 1, code, ...]`: `01` TX stall (TEC, REC, ESR), `02` TEC/REC monitor (immediate on error warning / passive / bus-off, at most 1 per 10 s; 60 s summary if TEC/REC peak >= 16), `03` software snapshot at a stall, `04` corrupted MCAN pointer restored.
+- TX ring full: drops counted. SysInfo types `0x10..0x1A` (request `0x550 [4, type]`) return CAN diagnostics.
+- No change to the VARS2, the old CAN format or the RPISERP tunnel.
+
 ## v001.13 (2026-11-08)
 
 - Task: VARS2 read layer, part B (`UHA_COMMON/tasks/vars2_read_layer.md`), branch `feature/vars2_read_elecon`
