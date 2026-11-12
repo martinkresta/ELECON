@@ -521,7 +521,7 @@ static void SendVariable(uint16_t id)
 	uint16_t invalid = 0;
 	uint16_t validflag = 0;
 	s_ScomTxMsg msg;
-	int16_t tmp = VAR_GetVariable(id, &invalid);
+	int16_t tmp = VAR_GetVariableLegacy(id, &invalid);   // old 0x221 keeps carrying Vars[]
 	validflag = (invalid == INVALID_FLAG ? 0 : 1);
 
 	msg.data[0] = CMD_TM_VAR_VALUE >> 8;

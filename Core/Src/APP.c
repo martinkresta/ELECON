@@ -56,6 +56,7 @@ void APP_Init(void)
 	SCOM_Init(&huart1);
 	MCAN_Init(&hcan1, THIS_NODE);
   COM_Init(THIS_NODE);
+  VAR_EnableVars2Read();   // remote variables are read from VARS2
   AC_Init();
  // BMS1_Init(&huart3);
  // BMS2_Init(&huart2);
@@ -261,6 +262,9 @@ static void ProcessMessage(s_CanRxMsg* msg)
            case esit_HWID:
              COM_SendSysInfo(esit_HWID, (uint32_t)HWID);
              break;
+             default:   // CAN diagnostics (esit_Can*), handled in UHA_COMMON
+               COM_SendSysInfoCommon(msg->data[1]);
+               break;
          }
       }
       break;
