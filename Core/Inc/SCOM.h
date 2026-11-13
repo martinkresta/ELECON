@@ -18,7 +18,6 @@
 
 #define SCOM_TX_MSG_BUFLEN	255
 
-#define NUM_OF_SCAN_VARS	300
 
 
 
@@ -26,7 +25,6 @@
 // PC application commands   range 0x
 #define  CMD_GET_DEV_ID  					0x710
 #define  CMD_GET_STATUS  					0x712
-#define  CMD_READ_VAR_REQUEST  		0x713
 #define  CMD_TM_SET_POWER_OUTPUTS 0x721
 #define  CMD_TM_SET_ELV 					0x722
 #define  CMD_TM_SET_AV  					0x723
@@ -39,7 +37,6 @@
 
 #define  CMD_TM_DEV_ID  					0x210
 #define  CMD_TM_STATUS  					0x212
-#define  CMD_TM_VAR_VALUE  				0x221
 
 #define  CMD_RPI_VAR_VALUE  			0x50
 #define  CMD_SET_VAR_VALUE 			 	0x120
