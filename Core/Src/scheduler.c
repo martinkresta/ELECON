@@ -16,7 +16,6 @@
 #include "MCAN.h"
 #include "COM.h"
 #include "MPPT.h"
-//#include "ELECON.h"
 #include "ELM.h"
 #include "APP.h"
 #include "ADC.h"
@@ -261,8 +260,6 @@ static void Timer_Task_250ms(void)
 static void Timer_Task_500ms(void)
 {
 	//HAL_GPIO_TogglePin(LED_B_GPIO_Port,LED_B_Pin);
-//	BMS1_Update_500ms();
-	//BMS2_Update_500ms();
 
 }
 

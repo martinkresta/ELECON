@@ -58,8 +58,6 @@ void APP_Init(void)
   COM_Init(THIS_NODE);
   VAR_EnableVars2Read();   // remote variables are read from VARS2
   AC_Init();
- // BMS1_Init(&huart3);
- // BMS2_Init(&huart2);
   MPPT_Init(&hlpuart1);
   WDG_Init(3000);
   SHUNT_Init(&hspi1);
@@ -330,12 +328,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	else if (huart->Instance == huart3.Instance)
 	{
 	  LEMON_UartRxCallback(huart, huart->RxXferSize - huart->RxXferCount);
-		//BMS1_UartRxCallback(huart->RxXferSize - huart->RxXferCount);
 	}
 	else if (huart->Instance == huart2.Instance)
 	{
 	  LEMON_UartRxCallback(huart, huart->RxXferSize - huart->RxXferCount);
-		//BMS2_UartRxCallback(huart->RxXferSize - huart->RxXferCount);
 	}
 }
 
@@ -349,12 +345,10 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 	else if (huart->Instance == huart3.Instance)
 	{
 	  LEMON_UartRxCallback(huart, Size);
-		//BMS1_UartRxCallback(Size);
 	}
 	else if (huart->Instance == huart2.Instance)
 	{
 	  LEMON_UartRxCallback(huart, Size);
-		//BMS2_UartRxCallback(Size);
 	}
 
 }
