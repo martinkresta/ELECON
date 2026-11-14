@@ -2,6 +2,25 @@
 
 Newest version first. Versions before v001.11 are not listed.
 
+## v001.17 (2026-11-14)
+
+- Task: VARS2 direct access part B (`UHA_COMMON/tasks/vars2_direct_access.md`), branch `feature/vars2_direct_access`
+  (UHA_COMMON: `main` + `feature/vars2_direct_access_elecon`)
+- CRC: `0xAFB6D7E8`
+- Based on v001.16.
+
+- Variables live in `Vars2` (value in physical units + valid flag); the old `Vars[]` / `VAR_*` API is no longer used here.
+- LEMON: packs named by capacity (80 Ah on UART3, 220 Ah on UART2); writes `HomeEnergy`. The BMS driver publishes
+  `PackHome80Ah` / `PackHome220Ah` itself: **invalid 5 s after the last valid BMS frame** (before: valid forever).
+- GEMON combines `HomeEnergy` and `WorkshopEnergy` into `GlobalEnergy` with exact values: `BAT_SOC` is no longer
+  truncated to whole %, currents / voltages / energies no longer to 0.1 / whole units. `LOAD_A` has the load validity.
+- MPPT writes `Mppt` (each value valid once read, as before); temperature now signed with 0.01 degC.
+- Exterior light (10 V / 20 V) and AC kitchen-power (> 50 W) thresholds in physical units, same switching points.
+- Obsolete serial command `CMD_SET_VAR_VALUE` removed; the RPi tunnel is unchanged.
+- VARS2 sends this node's variables by the YAML `period_ms` (CAN: same 10 variables and periods as the removed
+  `COM_AddStreamedVariable()` list; tunnel: unchanged).
+- Flash -1.8 KB, RAM -2.2 KB.
+
 ## v001.16 (2026-11-13)
 
 - Task: VARS2 step 6b part B (`UHA_COMMON/tasks/vars2_stop_legacy_tx.md`), branch `feature/vars2_stop_legacy_tx`
