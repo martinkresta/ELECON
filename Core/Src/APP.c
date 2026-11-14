@@ -225,9 +225,6 @@ static void ProcessMessage(s_CanRxMsg* msg)
 		case CMD_AC_REMOTE_REQ:
 		  AC_RemoteRequest((eDCACType)par1,(eACControl)par2,(uint16_t)par3);
 		  break;
-		case  CMD_VAR_VALUE:
-			VAR_SetVariable(par1, par2, par3);  // tbd check valid flag
-			break;
 		case CMD_GESTURE:
 			if (par1 == GEST_AC3KW_TOGGLE)
 			{

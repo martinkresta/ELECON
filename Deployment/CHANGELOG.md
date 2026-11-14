@@ -2,6 +2,17 @@
 
 Newest version first. Versions before v001.11 are not listed.
 
+## v001.16 (2026-11-13)
+
+- Task: VARS2 step 6b part B (`UHA_COMMON/tasks/vars2_stop_legacy_tx.md`), branch `feature/vars2_stop_legacy_tx`
+- CRC: `0x40B99687`
+- Based on v001.15.
+
+- Old variable frame `0x110+node` is no longer sent on CAN; only VARS2 `0x180+node` (shared `COM.c`, part A).
+- `CMD_VAR_VALUE` RX case removed from `APP.c`. All active remote inputs have a VARS2 row and are read through the read layer.
+- `SCOM.c`: old `0x221` traffic to the RPi removed: PC scan list (`InitPcScanList()`, 271 entries, `UpdateScanList()`, scan loop), `CMD_READ_VAR_REQUEST` (0x713) and `SendVariable()`. RAM -3.5 kB.
+- `VAR_NETWORK_STATUS` is still set every 5 s from `COM_GetNetworkStatus()`; it now reaches the RPi as VARS2 `NETWORK_STATUS` on `0x184` (tunnel only, not on CAN). UhaGate6 gets no live data from this version on.
+
 ## v001.15 (2026-11-12)
 
 - Task: GEMON invalid propagation (`ASW_ELECON/tasks/gemon_invalid_propagation.md`), branch `feature/gemon_invalid_propagation`
