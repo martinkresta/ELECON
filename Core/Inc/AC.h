@@ -10,6 +10,7 @@
 #define INC_AC_H_
 
 #include "main.h"
+#include "uha_vars_gen.h"   /* Vars2 group types */
 
 
 #define AC_MIN_ON_TIME_S			180
@@ -59,7 +60,8 @@ typedef enum
 
 
 
-void AC_Init(void);
+/* read: pKitchen (Vars2.Meters.IoboardD, kitchen power) */
+void AC_Init(const sVarsMetersIoboardD* pKitchen);
 
 void AC_Update_1s(void);
 

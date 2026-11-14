@@ -10,6 +10,7 @@
 #define INC_SCOM_H_
 
 #include "main.h"
+#include "uha_vars_gen.h"   /* sVarsSystem */
 
 
 #define SCOM_BAUDRATE 57600
@@ -39,7 +40,6 @@
 #define  CMD_TM_STATUS  					0x212
 
 #define  CMD_RPI_VAR_VALUE  			0x50
-#define  CMD_SET_VAR_VALUE 			 	0x120
 #define  CMD_RPI_RTC_SYNC  				0x51
 
 #define  MSG_START_B1							0x7F
@@ -64,7 +64,8 @@ typedef struct
 
 
 
-void SCOM_Init(UART_HandleTypeDef* uart);
+/* pSystem: produced group Vars2.System (NETWORK_STATUS, tunnel only) */
+void SCOM_Init(UART_HandleTypeDef* uart, sVarsSystem* pSystem);
 void SCOM_Update_10ms(void);
 
 void SCOM_SendMsg(uint8_t* data, uint8_t size);

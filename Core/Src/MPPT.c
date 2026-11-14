@@ -7,7 +7,7 @@
  */
 
 #include "MPPT.h"
-#include "VARS.h"
+#include "VARS2.h"
 
 static uint8_t mRxData[DMA_LENGTH];  // buffer for reception of raw BMS data
 static UART_HandleTypeDef* mMpptUart;
@@ -32,8 +32,11 @@ uint8_t validate32(uint32_t val, uint8_t* checksum, uint8_t* sum);
 
 
 // Initialization of the MPPT module
-void MPPT_Init(UART_HandleTypeDef* huart)
+static sVarsMppt* mpVars;   /* produced group Vars2.Mppt */
+
+void MPPT_Init(UART_HandleTypeDef* huart, sVarsMppt* pVars)
 {
+	mpVars = pVars;
 	HAL_StatusTypeDef UartRetval;
 	uint32_t UartError;
 	mNewDataReady = 0;
@@ -117,8 +120,8 @@ void MPPT_Update_100ms(void)
 void MPPT_MidnightNow(void)
 {
 	// reset todays yield and max power
-	VAR_SetVariable(VAR_MPPT_YIELD_TODAY_10WH, 0, 1);
-	VAR_SetVariable(VAR_MPPT_MAX_TODAY_W, 0, 1);
+	VarSet(&mpVars->YieldToday_Wh, 0.0f, 1);
+	VarSet(&mpVars->MaxPowerToday_W, 0.0f, 1);
 }
 
 void DecodeMessage(void)
@@ -159,36 +162,35 @@ void DecodeRegisterValue(uint16_t reg , uint8_t* value, uint8_t* sum)
 	int16_t s16;
 	uint32_t u32;
 	eValType type;
-	uint16_t invalid;
 	switch (reg)
 	{
 		case MPPT_REG_MAX_CHARGING_CURRENT:   // u16,  0.01 Amps
 			u16 = Hex2Uint(value, 4);
 			if (validate16(u16,value+4,sum))
 			{
-				VAR_SetVariable(VAR_MPPT_MAX_BAT_CURRENT_A10, u16, 1);
+				VarSet(&mpVars->MaxBatCurrent_A, (float)u16 / 10.0f, 1);
 			}
 			break;
 		case MPPT_REG_TEMP:     //  s16    0.01 C
 			u16 = Hex2Uint(value, 4);
 			if (validate16(u16,value+4,sum))
 			{
-				VAR_SetVariable(VAR_MPPT_TEMP_C, u16/100.0, 1);
+				VarSet(&mpVars->Temp_C, (float)(int16_t)u16 / 100.0f, 1);   // s16, 0.01 degC
 			}
 			break;
 		case MPPT_REG_CHARGER_CURRENT:  //  u16  0.1 A
 			u16 = Hex2Uint(value, 4);
 			if (validate16(u16,value+4,sum))
 			{
-				VAR_SetVariable(VAR_MPPT_BAT_CURRENT_A10, u16, 1);
-				VAR_SetVariable(VAR_CHARGING_A10, u16, 1);
+				VarSet(&mpVars->BatCurrent_A, (float)u16 / 10.0f, 1);
+				VarSet(&mpVars->Charging_A, (float)u16 / 10.0f, 1);
 			}
 			break;
 		case MPPT_REG_CHARGER_VOLTAGE:  //  u16   0.01 V
 			u16 = Hex2Uint(value, 4);
 			if (validate16(u16,value+4,sum))
 			{
-				VAR_SetVariable(VAR_MPPT_BAT_VOLTAGE_V100, u16, 1);
+				VarSet(&mpVars->BatVoltage_V, (float)u16 / 100.0f, 1);
 			}
 			break;
 		case MPPT_REG_YIELD_TODAY:    // u16  10 Wh
@@ -197,7 +199,7 @@ void DecodeRegisterValue(uint16_t reg , uint8_t* value, uint8_t* sum)
 			{
 				if (u16 >= 1)  // allow only values bigger than 0, because MPPT reset values already after sunset not at midnight
 				{
-					VAR_SetVariable(VAR_MPPT_YIELD_TODAY_10WH, u16, 1);
+					VarSet(&mpVars->YieldToday_Wh, (float)u16 * 10.0f, 1);   // register in 10 Wh
 				}
 			}
 			break;
@@ -207,7 +209,7 @@ void DecodeRegisterValue(uint16_t reg , uint8_t* value, uint8_t* sum)
 			{
 				if (u16 >= 1) // allow only values bigger than 0, because MPPT reset values already after sunset not at midnight
 				{
-					VAR_SetVariable(VAR_MPPT_MAX_TODAY_W, u16, 1);
+					VarSet(&mpVars->MaxPowerToday_W, (float)u16, 1);
 				}
 			}
 			break;
@@ -215,28 +217,28 @@ void DecodeRegisterValue(uint16_t reg , uint8_t* value, uint8_t* sum)
 			u32 = Hex2Uint(value, 8);
 			if (validate32(u32,value+8,sum))
 			{
-				VAR_SetVariable(VAR_MPPT_SOLAR_POWER_W, u32/100, 1);
+				VarSet(&mpVars->SolarPower_W, (float)u32 / 100.0f, 1);   // register in 0.01 W
 			}
 			break;
 		case MPPT_REG_SOLAR_VOLTAGE: // u16 0.01 V
 			u16 = Hex2Uint(value, 4);
 			if (validate16(u16,value+4,sum))
 			{
-				VAR_SetVariable(VAR_MPPT_SOLAR_VOLTAGE_V100, u16, 1);
+				VarSet(&mpVars->SolarVoltage_V, (float)u16 / 100.0f, 1);
 			}
 			break;
 		case MPPT_REG_SOLAR_CURRENT:  // u16  0.1  A
 			u16 = Hex2Uint(value, 4);
 			if (validate16(u16,value+4,sum))
 			{
-				VAR_SetVariable(VAR_MPPT_SOLAR_CURRENT_A10, u16, 1);
+				VarSet(&mpVars->SolarCurrent_A, (float)u16 / 10.0f, 1);
 			}
 			break;
 		case MPPT_REG_SOLAR_MAX_VOLTAGE:  // u16 0.01 V
 			u16 = Hex2Uint(value, 4);
 			if (validate16(u16,value+4,sum))
 			{
-				VAR_SetVariable(VAR_MPPT_SOLAR_MAX_VOLTAGE_V100, u16, 1);
+				VarSet(&mpVars->SolarMaxVoltage_V, (float)u16 / 100.0f, 1);
 			}
 			break;
 		default:

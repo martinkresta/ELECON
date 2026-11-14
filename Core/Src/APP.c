@@ -15,7 +15,7 @@
 #include "scheduler.h"
 #include "OW.h"
 #include "TEMP.h"
-#include "VARS.h"
+#include "VARS2.h"   /* Vars2: APP.c wires the groups to the modules */
 #include "SCOM.h"
 #include "COM.h"
 #include "AC.h"
@@ -37,6 +37,8 @@ static uint16_t RpiHB_Timer;
 
 static uint32_t mAppUpTime;
 
+static const sVarsMppt* mpMppt;   /* read: MPPT solar voltage for dusk / dawn */
+
 static void ProcessMessage(s_CanRxMsg* msg);
 static void ExtLightControl(void);
 
@@ -52,18 +54,17 @@ void APP_Init(void)
 
 	OW_Init();
 	TEMP_Init();
-	VAR_Init();
-	SCOM_Init(&huart1);
+	SCOM_Init(&huart1, &Vars2.System);
 	MCAN_Init(&hcan1, THIS_NODE);
   COM_Init(THIS_NODE);
-  VAR_EnableVars2Read();   // remote variables are read from VARS2
-  AC_Init();
-  MPPT_Init(&hlpuart1);
+  AC_Init(&Vars2.Meters.IoboardD);
+  MPPT_Init(&hlpuart1, &Vars2.Mppt);
   WDG_Init(3000);
-  SHUNT_Init(&hspi1);
+  SHUNT_Init(&hspi1, &Vars2.ShuntHome);
  // ELC_Init();
-  LEMON_Init(&huart3, &huart2);
-  GEMON_Init();
+  LEMON_Init(&huart3, &huart2, &Vars2.HomeEnergy, &Vars2.PackHome80Ah, &Vars2.PackHome220Ah, &Vars2.Mppt);
+  GEMON_Init(&Vars2.GlobalEnergy, &Vars2.HomeEnergy, &Vars2.WorkshopEnergy);
+  mpMppt = &Vars2.Mppt;
 
   PWROUT_Init();
   ELM_Init(NUM_OF_ELEMTERS);
@@ -102,33 +103,23 @@ void APP_Init(void)
 	TEMP_AddHwBus(0,OW1_GPIO_Port, OW1_Pin);
 
 	// assign sensors on OW1 :
-	TEMP_AssignSensor(T_ELECON, VAR_TEMP_ELECON_BOARD, 0);
-	TEMP_AssignSensor(T7, VAR_TEMP_OFFICE, 0);
-	TEMP_AssignSensor(T310, VAR_TEMP_KIDROOM, 0);
-	TEMP_AssignSensor(T304, VAR_TEMP_OUTSIDE, 0);
+	TEMP_AssignSensor(T_ELECON, VID_TEMP_ELECON_BOARD_C, 0);
+	TEMP_AssignSensor(T7, VID_TEMP_OFFICE_C, 0);
+	TEMP_AssignSensor(T310, VID_TEMP_KIDROOM_C, 0);
+	TEMP_AssignSensor(T304, VID_TEMP_OUTSIDE_C, 0);
 
 
 
 	/* Configure CAN streamed variables */
 
-	COM_AddStreamedVariable(VAR_BAT_SOC, 1000);  // SOC
-	COM_AddStreamedVariable(VAR_BAT_VOLTAGE_V10, 1000);  // VBAT
-	COM_AddStreamedVariable(VAR_CHARGING_A10, 1000);  // Charging amps
-	COM_AddStreamedVariable(VAR_LOAD_A100, 1000);  // Load amps
-	COM_AddStreamedVariable(VAR_BAT_CURRENT_A10, 1000);  // Bat amps
-	COM_AddStreamedVariable(VAR_MPPT_SOLAR_VOLTAGE_V100, 1000);  // MPPT voltage
-
-	COM_AddStreamedVariable(VAR_TEMP_ELECON_BOARD, 3000);
-	COM_AddStreamedVariable(VAR_TEMP_OFFICE, 3000);
-	COM_AddStreamedVariable(VAR_TEMP_KIDROOM, 3000);
-	COM_AddStreamedVariable(VAR_TEMP_OUTSIDE, 3000);
+	// CAN: VARS2 sends this node's variables by the YAML period_ms (on_can: false ones through the tunnel)
 
 
 	/*configure elmeters*/
 
-	ELM_AddMeter(ELM_AC_300W, EL1_Pin, VAR_CONS_AC300_WH);
-	ELM_AddMeter(ELM_AC_3KW, EL2_Pin, VAR_CONS_AC3KW_WH);
-	ELM_AddMeter(ELM_AC_5KW, EL3_Pin, VAR_CONS_AC5KW_WH);
+	ELM_AddMeter(ELM_AC_300W, EL1_Pin, VID_CONS_AC300_WH);
+	ELM_AddMeter(ELM_AC_3KW, EL2_Pin, VID_CONS_AC3KW_WH);
+	ELM_AddMeter(ELM_AC_5KW, EL3_Pin, VID_CONS_AC5KW_WH);
 
 	/* Turn on FAN of PWR OUT2*/
 	PWROUT_SetPct(OUT2, 100);
@@ -281,8 +272,8 @@ static void ExtLightControl(void)
 {
 	static uint8_t DarkOutside = 0;
 
-	uint16_t invalid;
-	if(VAR_GetVariable(VAR_MPPT_SOLAR_VOLTAGE_V100, &invalid) < 1000  && !DarkOutside)  // sun sets
+	// own MPPT solar voltage; validity not checked, as before
+	if(mpMppt->SolarVoltage_V.value < 10.0f  && !DarkOutside)  // sun sets
 	{
 		DarkOutside = 1;
 		// enable exterior lights
@@ -290,7 +281,7 @@ static void ExtLightControl(void)
 		PWROUT_SetPct(OUT4, 100);
 	}
 
-	if(VAR_GetVariable(VAR_MPPT_SOLAR_VOLTAGE_V100, &invalid) > 2000  && DarkOutside)  // sun rises
+	if(mpMppt->SolarVoltage_V.value > 20.0f  && DarkOutside)  // sun rises
 	{
 		DarkOutside = 0;
 		// disable exterior lights
