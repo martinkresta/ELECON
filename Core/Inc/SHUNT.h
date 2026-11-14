@@ -11,6 +11,7 @@
 
 
 #include "main.h"
+#include "uha_vars_gen.h"   /* sVarsShunt */
 
 
  // SPI defines
@@ -49,7 +50,8 @@
 
  // Init the module and pass handle to used SPI (preconfigured by MX)
 
-void SHUNT_Init(SPI_HandleTypeDef* hspi);
+/* pVars: produced group (Vars2.ShuntHome) */
+void SHUNT_Init(SPI_HandleTypeDef* hspi, sVarsShunt* pVars);
 void SHUNT_Update_100ms(void);
 int32_t SHUNT_GetIbat_mA(void);
 

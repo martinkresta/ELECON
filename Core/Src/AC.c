@@ -10,7 +10,7 @@
 #include "RTC.h"
 #include "ELM.h"
 #include "APP.h"
-#include "VARS.h"
+#include "VARS2.h"
 
 uint16_t m5KwStateTimer_s;   // time elapsed since laste state change
 uint16_t m3KwStateTimer_s;   // time elapsed since laste state change
@@ -28,8 +28,11 @@ void AcStateMachine(sDCAC* AC);
 void ButtonGesture(sDCAC* AC);
 void RemoteRequest(sDCAC* AC, eACControl request, uint16_t keepOnTime);
 
-void AC_Init(void)
+static const sVarsMetersIoboardD* mpKitchen;   /* read: kitchen power (IOBOARD_D) */
+
+void AC_Init(const sVarsMetersIoboardD* pKitchen)
 {
+  mpKitchen = pKitchen;
   AC300W.AutoOfPower = AC_KEEP_ON_POWER_W_300W;
   AC300W.EnableAutoOff = 0;
   AC300W.MinOnTime = 0;
@@ -68,7 +71,6 @@ void AC_Init(void)
 
 void AC_Update_1s(void)
 {
-  uint16_t invalid;
 	sDateTime now = RTC_GetTime();
 
   // Configure 300 auto off conditions w.r.t DARK_SEASON
@@ -94,7 +96,7 @@ void AC_Update_1s(void)
 	}
 
 	// start the 300W AC when kitchen consumption is significant -> enable air cleaner   (applicable only in dark season)
-	if((50 < VAR_GetVariable(VAR_POW_KITCHEN_W, &invalid)) && AC300W.state == acs_Off)
+	if((50.0f < mpKitchen->KitchenPower_W.value) && AC300W.state == acs_Off)   // validity not checked, as before
 	{
 	  if(AC300W.OnTimer < 180)
     {

@@ -9,7 +9,6 @@
 
 #include "main.h"
 #include "SCOM.h"
-#include "VARS.h"
 #include "circbuf.h"
 #include "COM.h"
 #include "UI.h"
@@ -34,13 +33,15 @@ s_ScomTxMsg mTxMsg;
 uint8_t mPcConnected;
 uint16_t mPcHbTimer;
 uint16_t mNsSendTimer;  // timer for sending network status
+static sVarsSystem* mpSystem;   /* produced: NETWORK_STATUS */
 
 
 static void ProcessMessage(void);
 static void TunnelVars2Frame(uint16_t cobId, const uint8_t* data8);
 
-void SCOM_Init(UART_HandleTypeDef* uart)
+void SCOM_Init(UART_HandleTypeDef* uart, sVarsSystem* pSystem)
 {
+	mpSystem = pSystem;
 
 	mRxLength = 0;
 	mPcConnected = 0;
@@ -69,7 +70,7 @@ void SCOM_Update_10ms(void)
 	if (mNsSendTimer > NS_SEND_PERIOD)
 	{
 		mNsSendTimer = 0;
-		VAR_SetVariable(VAR_NETWORK_STATUS,COM_GetNetworkStatus(), 1);
+		VarSetU32(&mpSystem->NetworkStatus, (uint16_t)COM_GetNetworkStatus(), 1);
 	}
 
 
@@ -126,9 +127,6 @@ static void ProcessMessage(void)
 		uint16_t id = (mRxBuffer[0]<<8) | mRxBuffer[1];
 		uint32_t unixtime = 0;
 
-		uint16_t data1, data2;// data3, data4;
-		data1 = (mRxBuffer[2]<<8) | mRxBuffer[3];
-		data2 = (mRxBuffer[4]<<8) | mRxBuffer[5];
 	//	data3 = (mRxBuffer[6]<<8) | mRxBuffer[7];
 	//	data4 = (mRxBuffer[8]<<8) | mRxBuffer[9];
 
@@ -152,9 +150,6 @@ static void ProcessMessage(void)
 				unixtime |= mRxBuffer[5];
 				RTC_SetUnixTime(unixtime);
 				APP_RpiHeartbeat();
-				break;
-			case CMD_SET_VAR_VALUE:
-				VAR_SetVariable(data1 & 0x7FFF, data2, ((data1 & 0x8000)? 0 : 1));
 				break;
 		}
 

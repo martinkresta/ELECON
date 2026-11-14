@@ -13,6 +13,7 @@
 #include "GEMON.h"
 #include "COM.h"
 #include "RTC.h"
+#include "VARS2.h"
 
 
 sGemon mGmon;
@@ -23,23 +24,29 @@ sElUtil mEutil;
 static uint8_t mBatValid;
 static uint8_t mSolarValid;
 static uint8_t mLoadValid;
-static uint8_t mLoadA100Valid;
 static float   mTotalCapacity;   // last valid total capacity [Wh] (used by the optimal charging calculation)
-static int16_t mLoadA100;        // last valid VAR_LOAD_A100
+static float   mLoadCurrent_A;   // load current, computed only while load and battery are valid (last value kept)
+
+static sVarsGlobalEnergy* mpOut;            /* produced: Battery, Solar, Load */
+static const sVarsLocalEnergy* mpHome;      /* read: HomeEnergy (own LEMON) */
+static const sVarsLocalEnergy* mpWorkshop;  /* read: WorkshopEnergy (ELECON_D) */
 
 static void SendBalanceInfo(void);
 
-void GEMON_Init(void)
+void GEMON_Init(sVarsGlobalEnergy* pOut, const sVarsLocalEnergy* pHome, const sVarsLocalEnergy* pWorkshop)
 {
+  mpOut = pOut;
+  mpHome = pHome;
+  mpWorkshop = pWorkshop;
   mEutil.ChargeTargetHour = 15;
 }
 
 void GEMON_Update_1s(void)
 {
   sDateTime now;
-  uint16_t invBat = 0;
-  uint16_t invSolar = 0;
-  uint16_t invLoad = 0;
+  const sVarsLocalEnergyStorage* h = &mpHome->Storage;
+  const sVarsLocalEnergyStorage* w = &mpWorkshop->Storage;
+  uint8_t batInputsValid, loadInputsValid, solarInputsValid;
   float totalCapacity;
   float optChargePower;
   float totalOptBalanceCurrent;
@@ -50,12 +57,15 @@ void GEMON_Update_1s(void)
   // calculate
 
   // battery group
-  batEnergy = VAR_GetVariable(VAR_STRG1_ENERGY_WH, &invBat) + VAR_GetVariable(VAR_STRG2_ENERGY_WH, &invBat) ;
-  batVoltage = (VAR_GetVariable(VAR_STRG1_VOLTAGE_V10, &invBat) + VAR_GetVariable(VAR_STRG2_VOLTAGE_V10, &invBat))/20.0 ;
-  totalCapacity = (VAR_GetVariable(VAR_STRG1_CAPACITY_AH, &invBat) + VAR_GetVariable(VAR_STRG2_CAPACITY_AH, &invBat)) * batVoltage ;
-  batPower = VAR_GetVariable(VAR_STRG1_POWER_W, &invBat) + VAR_GetVariable(VAR_STRG2_POWER_W, &invBat) ;
-  batCurrent = (VAR_GetVariable(VAR_STRG1_CURRENT_A10, &invBat)/10.0) + (VAR_GetVariable(VAR_STRG2_CURRENT_A10, &invBat)/10.0) ;
-  if (invBat == 0 && totalCapacity > 0 && batVoltage > 0)
+  batInputsValid = h->Energy_Wh.valid && w->Energy_Wh.valid && h->Voltage_V.valid && w->Voltage_V.valid &&
+               h->Capacity_Ah.valid && w->Capacity_Ah.valid && h->Power_W.valid && w->Power_W.valid &&
+               h->Current_A.valid && w->Current_A.valid;
+  batEnergy = h->Energy_Wh.value + w->Energy_Wh.value;
+  batVoltage = (h->Voltage_V.value + w->Voltage_V.value) / 2;
+  totalCapacity = (h->Capacity_Ah.value + w->Capacity_Ah.value) * batVoltage;
+  batPower = h->Power_W.value + w->Power_W.value;
+  batCurrent = h->Current_A.value + w->Current_A.value;
+  if (batInputsValid && totalCapacity > 0 && batVoltage > 0)
   {
     mGmon.BatEnergy = batEnergy;
     mGmon.BatVoltage = batVoltage;
@@ -72,9 +82,11 @@ void GEMON_Update_1s(void)
   totalCapacity = mTotalCapacity;
 
   // load group
-  loadPower = VAR_GetVariable(VAR_LLOAD1_POWER_W, &invLoad) + VAR_GetVariable(VAR_LLOAD2_POWER_W, &invLoad) ;
-  loadCons_Wh = VAR_GetVariable(VAR_LLOAD1_CONS_WH, &invLoad) + VAR_GetVariable(VAR_LLOAD2_CONS_WH, &invLoad) ;
-  if (invLoad == 0)
+  loadInputsValid = mpHome->Load.Power_W.valid && mpWorkshop->Load.Power_W.valid &&
+                mpHome->Load.Cons_Wh.valid && mpWorkshop->Load.Cons_Wh.valid;
+  loadPower = mpHome->Load.Power_W.value + mpWorkshop->Load.Power_W.value;
+  loadCons_Wh = mpHome->Load.Cons_Wh.value + mpWorkshop->Load.Cons_Wh.value;
+  if (loadInputsValid)
   {
     mGmon.LoadPower = loadPower;
     mGmon.LoadCons_Wh = loadCons_Wh;
@@ -84,20 +96,18 @@ void GEMON_Update_1s(void)
   {
     mLoadValid = 0;
   }
-  if (mLoadValid && mBatValid)   // LOAD_A100 also needs the battery voltage (> 0 guaranteed by mBatValid)
+  if (mLoadValid && mBatValid)   // load current also needs the battery voltage (> 0 guaranteed by mBatValid)
   {
-    mLoadA100 = (int16_t)(100 * mGmon.LoadPower / mGmon.BatVoltage);
-    mLoadA100Valid = 1;
+    mLoadCurrent_A = mGmon.LoadPower / mGmon.BatVoltage;
   }
-  else
-  {
-    mLoadA100Valid = 0;
-  }
+  // else: last value kept, published with the load validity (decision 3, direct access)
 
   // solar group
-  solarPower = VAR_GetVariable(VAR_LPV1_POWER_W, &invSolar) + VAR_GetVariable(VAR_LPV2_POWER_W, &invSolar) ;
-  solarProd_Wh = VAR_GetVariable(VAR_LPV1_PROD_WH, &invSolar) + VAR_GetVariable(VAR_LPV2_PROD_WH, &invSolar) ;
-  if (invSolar == 0)
+  solarInputsValid = mpHome->Pv.Power_W.valid && mpWorkshop->Pv.Power_W.valid &&
+                 mpHome->Pv.Prod_Wh.valid && mpWorkshop->Pv.Prod_Wh.valid;
+  solarPower = mpHome->Pv.Power_W.value + mpWorkshop->Pv.Power_W.value;
+  solarProd_Wh = mpHome->Pv.Prod_Wh.value + mpWorkshop->Pv.Prod_Wh.value;
+  if (solarInputsValid)
   {
     mGmon.SolarPower = solarPower;
     mGmon.SolarProd_Wh = solarProd_Wh;
@@ -109,9 +119,9 @@ void GEMON_Update_1s(void)
   }
 
   // Balancing and optimal charging support (validity of these inputs is not evaluated, as before)
-  totalOptBalanceCurrent = VAR_GetVariable(VAR_STRG1_OPT_CHARGING_A, NULL) + VAR_GetVariable(VAR_STRG2_OPT_CHARGING_A, NULL) ;  // calculated by lemon to support balancing
-  mEutil.Strg1.BalancedToday =  VAR_GetVariable(VAR_STRG1_BALANCED_TODAY, NULL);
-  mEutil.Strg2.BalancedToday =  VAR_GetVariable(VAR_STRG2_BALANCED_TODAY, NULL);
+  totalOptBalanceCurrent = h->OptCharging_A.value + w->OptCharging_A.value;  // calculated by lemon to support balancing
+  mEutil.Strg1.BalancedToday = (uint8_t)h->BalancedToday.value;
+  mEutil.Strg2.BalancedToday = (uint8_t)w->BalancedToday.value;
 
 
   // Maximal utilization of available PV energy:
@@ -143,20 +153,21 @@ void GEMON_Update_1s(void)
 
 
   // Publish (invalid group: last valid values with valid = 0; 0 before the first valid computation)
-  VAR_SetVariable(VAR_BAT_SOC,(int16_t)(mGmon.BatSoc),mBatValid);
-  VAR_SetVariable(VAR_BAT_VOLTAGE_V10,(int16_t)(mGmon.BatVoltage*10),mBatValid);
-  VAR_SetVariable(VAR_BAT_CURRENT_A10,(int16_t)(mGmon.BatCurrent*10),mBatValid);
-  VAR_SetVariable(VAR_BAT_POWER_W,(int16_t)(mGmon.BatPower),mBatValid);
-  VAR_SetVariable(VAR_BAT_ENERGY_WH,(int16_t)(mGmon.BatEnergy),mBatValid);
+  mpOut->Battery.Soc_pct.value = mGmon.BatSoc;
+  mpOut->Battery.Voltage_V.value = mGmon.BatVoltage;
+  mpOut->Battery.Current_A.value = mGmon.BatCurrent;
+  mpOut->Battery.Power_W.value = mGmon.BatPower;
+  mpOut->Battery.Energy_Wh.value = mGmon.BatEnergy;
+  VARS2_SetGroupValid(&mpOut->Battery, mBatValid);
 
-  VAR_SetVariable(VAR_SOLAR_POWER_W,(int16_t)(mGmon.SolarPower),mSolarValid);
-  VAR_SetVariable(VAR_SOLAR_ENERGY_TODAY_10WH,(int16_t)(mGmon.SolarProd_Wh/10), mSolarValid);
-  //VAR_SetVariable(VAR_CHARGING_A10,(int16_t)(10 * mGmon.SolarPower / mGmon.BatVoltage),1);  // !!! WARNING Used by TECHM ELHEATER
+  mpOut->Solar.Power_W.value = mGmon.SolarPower;
+  mpOut->Solar.EnergyToday_Wh.value = mGmon.SolarProd_Wh;
+  VARS2_SetGroupValid(&mpOut->Solar, mSolarValid);
 
-  VAR_SetVariable(VAR_LOAD_W,(int16_t)(mGmon.LoadPower),mLoadValid);
-  VAR_SetVariable(VAR_CONS_TODAY_10WH,(int16_t)(mGmon.LoadCons_Wh/10), mLoadValid);
-  VAR_SetVariable(VAR_LOAD_A100,mLoadA100,mLoadA100Valid);  // Auxiliary value just for WEB visualisation
-
+  mpOut->Load.Power_W.value = mGmon.LoadPower;
+  mpOut->Load.ConsToday_Wh.value = mGmon.LoadCons_Wh;
+  mpOut->Load.Current_A.value = mLoadCurrent_A;
+  VARS2_SetGroupValid(&mpOut->Load, mLoadValid);
 }
 
 

@@ -9,7 +9,7 @@
 
 #include "../Inc/SHUNT.h"
 
-#include "VARS.h"
+#include "VARS2.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,8 +36,11 @@ static uint8_t SpiTransfer(uint8_t length, uint8_t* recdata);
 
 // hspi has to be preconfigured by MX cube,
 
- void SHUNT_Init(SPI_HandleTypeDef* hspi)
+ static sVarsShunt* mpVars;   /* produced group Vars2.ShuntHome */
+
+ void SHUNT_Init(SPI_HandleTypeDef* hspi, sVarsShunt* pVars)
  {
+	 mpVars = pVars;
 	 mSpi = hspi;
 	 mSpiBusy = 0;
 
@@ -117,11 +120,11 @@ static uint8_t SpiTransfer(uint8_t length, uint8_t* recdata);
 
 		 if (mFi >= SHUNT_I_FILTER_LENGTH) mFi = 0;
 
-		 VAR_SetVariable(VAR_SHUNT_PCK2_CURRENT_A100, (int16_t)(mIbatAvg_mA/10),1);
+		 VarSet(&mpVars->Current_A, (float)mIbatAvg_mA / 1000.0f, 1);
 	 }
 	 else
 	 {
-		 VAR_SetVariable(VAR_SHUNT_PCK2_CURRENT_A100, (int16_t)(mIbatAvg_mA/10),0);
+		 VarSet(&mpVars->Current_A, (float)mIbatAvg_mA / 1000.0f, 0);
 	 }
 
 

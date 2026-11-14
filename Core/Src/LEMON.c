@@ -12,40 +12,46 @@
 #include "SHUNT.h"
 #include "MPPT.h"
 #include "BMS.h"
-#include "VARS.h"
+#include "VARS2.h"
 
 
 sLemon mLemon;
-sBMS mBms1;
-sBMS mBms2;
+sBMS mBms80;
+sBMS mBms220;
+
+static sVarsLocalEnergy* mpEnergy;   /* produced: Storage, Load, Pv */
+static const sVarsMppt* mpMppt;      /* read */
 
 
 static void SocReinit(void);
 static void CalculateOptimalCharging(void);
 static void CheckFullyCharged(void);
-static void PublishVARs(void);
+static void Publish(void);
 
-void LEMON_Init(UART_HandleTypeDef* huart1, UART_HandleTypeDef* huart2)
+void LEMON_Init(UART_HandleTypeDef* huart80, UART_HandleTypeDef* huart220, sVarsLocalEnergy* pEnergy,
+                sVarsPack* pPack80, sVarsPack* pPack220, const sVarsMppt* pMppt)
 {
-  mLemon.Bms1 = &mBms1;
-  mLemon.Bms2 = &mBms2;
+  mLemon.Bms80 = &mBms80;
+  mLemon.Bms220 = &mBms220;
+  mpEnergy = pEnergy;
+  mpMppt = pMppt;
 
   // Configuration
-  mLemon.Cfg.Pack1_Ah = 80;
-  mLemon.Cfg.Pack2_Ah = 220;
+  mLemon.Cfg.Pack80_Ah = 80;
+  mLemon.Cfg.Pack220_Ah = 220;
   mLemon.Cfg.Shunt_R_uOhm = 250;  // not used so far
 
 
   // Init the underlayer
-  if(mLemon.Cfg.Pack1_Ah != 0)
+  if(mLemon.Cfg.Pack80_Ah != 0)
   {
-    mLemon.Bms1->Huart = huart1;
-    BMS_Init(mLemon.Bms1);
+    mLemon.Bms80->Huart = huart80;
+    BMS_Init(mLemon.Bms80, pPack80);   // the BMS driver publishes the pack group
   }
-  if(mLemon.Cfg.Pack2_Ah != 0)
+  if(mLemon.Cfg.Pack220_Ah != 0)
   {
-    mLemon.Bms2->Huart = huart2;
-    BMS_Init(mLemon.Bms2);
+    mLemon.Bms220->Huart = huart220;
+    BMS_Init(mLemon.Bms220, pPack220);
   }
   // SHUNT and MPPT should be initialized from APP.c
 
@@ -56,10 +62,9 @@ void LEMON_Init(UART_HandleTypeDef* huart1, UART_HandleTypeDef* huart2)
 
 void LEMON_Update_1s(void)
 {
-  uint16_t invalid = 0;
   // Update BMSs
-  BMS_Update(mLemon.Bms1);
-  BMS_Update(mLemon.Bms2);
+  BMS_Update(mLemon.Bms80);
+  BMS_Update(mLemon.Bms220);
 
 
   // Check if SOC initialization is needed
@@ -76,7 +81,7 @@ void LEMON_Update_1s(void)
   // Storage
   mLemon.Storage.Current = (float)(SHUNT_GetIbat_mA() / 1000.0);
   mLemon.Internal.Avilable_mAs += mLemon.Storage.Current * 1000.0;
- // mLemon.Storage.Voltage = (mLemon.Bms1->LiveData.VoltageTotal_mV + mLemon.Bms2->LiveData.VoltageTotal_mV)/2000.0;  // mV to V
+ // mLemon.Storage.Voltage = (mLemon.Bms80->LiveData.VoltageTotal_mV + mLemon.Bms220->LiveData.VoltageTotal_mV)/2000.0;  // mV to V
 
   // limit 100%
   if((mLemon.Internal.Avilable_mAs/AH2MAS) > (mLemon.Internal.TotalCapacity_Ah))
@@ -84,14 +89,14 @@ void LEMON_Update_1s(void)
     mLemon.Internal.Avilable_mAs = (mLemon.Internal.TotalCapacity_Ah * AH2MAS);
   }
 
-  mLemon.Storage.Voltage = (mLemon.Bms2->LiveData.VoltageTotal_mV)/1000.0;  // mV to V
+  mLemon.Storage.Voltage = (mLemon.Bms220->LiveData.VoltageTotal_mV)/1000.0;  // mV to V
   mLemon.Storage.Energy = mLemon.Internal.Avilable_mAs * mLemon.Storage.Voltage / AH2MAS;   // Ah * V => Wh
   mLemon.Storage.Power = mLemon.Storage.Current * mLemon.Storage.Voltage;
   mLemon.Storage.Soc = 100 * (mLemon.Internal.Avilable_mAs / AH2MAS) / (mLemon.Internal.TotalCapacity_Ah);  // in percents
 
-  // Production
-  mLemon.Prod.Power = VAR_GetVariable(VAR_MPPT_SOLAR_POWER_W, &invalid);
-  mLemon.Prod.ChargeCurrent = VAR_GetVariable(VAR_MPPT_BAT_CURRENT_A10, &invalid) / 10.0;
+  // Production (MPPT validity not checked, as before)
+  mLemon.Prod.Power = mpMppt->SolarPower_W.value;
+  mLemon.Prod.ChargeCurrent = mpMppt->BatCurrent_A.value;
   mLemon.Prod.Prod_Wh += (mLemon.Prod.Power / 3600.0);  // wS to wH
 
   // Load
@@ -104,7 +109,7 @@ void LEMON_Update_1s(void)
   CalculateOptimalCharging();
 
   // Publish
-  PublishVARs();
+  Publish();
 }
 
 void LEMON_MidnightNow(void)
@@ -119,7 +124,7 @@ void LEMON_MidnightNow(void)
 
 void LEMON_UartRxCallback(UART_HandleTypeDef *huart, uint16_t reclength)
 {
-  BMS_UartRxCallback(huart, reclength, mLemon.Bms1, mLemon.Bms2);
+  BMS_UartRxCallback(huart, reclength, mLemon.Bms80, mLemon.Bms220);
 }
 
 
@@ -130,13 +135,13 @@ static void SocReinit(void)
   uint8_t ValidInit = 1;
   uint64_t totalAvailable_mAs = 0;
 
-  mLemon.Internal.TotalCapacity_Ah = mLemon.Cfg.Pack1_Ah + mLemon.Cfg.Pack2_Ah;
+  mLemon.Internal.TotalCapacity_Ah = mLemon.Cfg.Pack80_Ah + mLemon.Cfg.Pack220_Ah;
 
-  if(mLemon.Cfg.Pack1_Ah)   // BMS1 should communicate
+  if(mLemon.Cfg.Pack80_Ah)   // 80 Ah BMS should communicate
   {
-    if(mLemon.Bms1->Active && mLemon.Bms1->LiveData.SOC)
+    if(mLemon.Bms80->Active && mLemon.Bms80->LiveData.SOC)
     {
-      totalAvailable_mAs += mLemon.Cfg.Pack1_Ah * AH2MAS * mLemon.Bms1->LiveData.SOC / 100;
+      totalAvailable_mAs += mLemon.Cfg.Pack80_Ah * AH2MAS * mLemon.Bms80->LiveData.SOC / 100;
     }
     else
     {
@@ -144,11 +149,11 @@ static void SocReinit(void)
     }
   }
 
-  if(mLemon.Cfg.Pack2_Ah)   // BMS2 should communicate
+  if(mLemon.Cfg.Pack220_Ah)   // 220 Ah BMS should communicate
   {
-    if(mLemon.Bms2->Active && mLemon.Bms2->LiveData.SOC)
+    if(mLemon.Bms220->Active && mLemon.Bms220->LiveData.SOC)
     {
-      totalAvailable_mAs += mLemon.Cfg.Pack2_Ah * AH2MAS * mLemon.Bms2->LiveData.SOC / 100;
+      totalAvailable_mAs += mLemon.Cfg.Pack220_Ah * AH2MAS * mLemon.Bms220->LiveData.SOC / 100;
     }
     else
     {
@@ -170,14 +175,14 @@ static void CheckFullyCharged(void)
 {
 
   // Check if storage is fully charged (This should happen only once when charging is stopped, thus we need Charging Disabled Flag
-  if((!BMS_IsChargingEnabled(mLemon.Bms1) || !BMS_IsChargingEnabled(mLemon.Bms2)) &&
-    (mLemon.Bms1->LiveData.SOC >= 99 || mLemon.Bms2->LiveData.SOC >= 99) && !mLemon.ChargingDisabledFlag)
+  if((!BMS_IsChargingEnabled(mLemon.Bms80) || !BMS_IsChargingEnabled(mLemon.Bms220)) &&
+    (mLemon.Bms80->LiveData.SOC >= 99 || mLemon.Bms220->LiveData.SOC >= 99) && !mLemon.ChargingDisabledFlag)
   {
     mLemon.Internal.Avilable_mAs = mLemon.Internal.TotalCapacity_Ah * AH2MAS;  // fully charged
     mLemon.ChargingDisabledFlag = 1;
   }
 
-  if((BMS_IsChargingEnabled(mLemon.Bms1) && BMS_IsChargingEnabled(mLemon.Bms2)))  // Just resetting the flag
+  if((BMS_IsChargingEnabled(mLemon.Bms80) && BMS_IsChargingEnabled(mLemon.Bms220)))  // Just resetting the flag
   {
     mLemon.ChargingDisabledFlag = 0;
   }
@@ -185,13 +190,13 @@ static void CheckFullyCharged(void)
 
   // Get the minimal cell voltage (only from BMSs which are active)
   mLemon.Internal.MinCellVoltage_mV = 0;
-  if(mLemon.Bms1->Active)
+  if(mLemon.Bms80->Active)
   {
-    mLemon.Internal.MinCellVoltage_mV = mLemon.Bms1->LiveData.MinCellVoltage_mV;
+    mLemon.Internal.MinCellVoltage_mV = mLemon.Bms80->LiveData.MinCellVoltage_mV;
   }
-  if(mLemon.Bms2->Active && (mLemon.Bms2->LiveData.MinCellVoltage_mV < mLemon.Internal.MinCellVoltage_mV))
+  if(mLemon.Bms220->Active && (mLemon.Bms220->LiveData.MinCellVoltage_mV < mLemon.Internal.MinCellVoltage_mV))
   {
-    mLemon.Internal.MinCellVoltage_mV = mLemon.Bms2->LiveData.MinCellVoltage_mV;
+    mLemon.Internal.MinCellVoltage_mV = mLemon.Bms220->LiveData.MinCellVoltage_mV;
   }
 
 
@@ -210,13 +215,13 @@ static void CalculateOptimalCharging(void)
 
 
   // Support the cell top balancing by lowering charging current
-  if (mLemon.Bms1->LiveData.MaxCellVoltage_mV > mLemon.Bms2->LiveData.MaxCellVoltage_mV)
+  if (mLemon.Bms80->LiveData.MaxCellVoltage_mV > mLemon.Bms220->LiveData.MaxCellVoltage_mV)
   {
-    mLemon.Internal.MaxCellVoltage_mV = mLemon.Bms1->LiveData.MaxCellVoltage_mV;
+    mLemon.Internal.MaxCellVoltage_mV = mLemon.Bms80->LiveData.MaxCellVoltage_mV;
   }
   else
   {
-    mLemon.Internal.MaxCellVoltage_mV = mLemon.Bms2->LiveData.MaxCellVoltage_mV;
+    mLemon.Internal.MaxCellVoltage_mV = mLemon.Bms220->LiveData.MaxCellVoltage_mV;
   }
   if ( mLemon.Internal.MaxCellVoltage_mV >= CELL_BALANCE_MV)
   {
@@ -225,112 +230,22 @@ static void CalculateOptimalCharging(void)
 }
 
 
-static void PublishVARs(void)
+// HomeEnergy: always valid (as before: this node has no storage validity)
+static void Publish(void)
 {
-  uint8_t validflag = 1;
+  sVarsLocalEnergy* e = mpEnergy;
 
-  VAR_SetVariable(VAR_STRG1_SOC,(int16_t)(mLemon.Storage.Soc * 100), validflag);
-  VAR_SetVariable(VAR_STRG1_POWER_W, (int16_t)mLemon.Storage.Power, validflag);
-  VAR_SetVariable(VAR_STRG1_CURRENT_A10, (int16_t)(mLemon.Storage.Current * 10), validflag);
-  VAR_SetVariable(VAR_STRG1_VOLTAGE_V10, (int16_t)(mLemon.Storage.Voltage * 10), validflag);
-  VAR_SetVariable(VAR_STRG1_ENERGY_WH, (int16_t)mLemon.Storage.Energy, validflag);
-  VAR_SetVariable(VAR_STRG1_OPT_CHARGING_A , (int16_t)mLemon.Storage.OptChargingCurrent, validflag);
-  VAR_SetVariable(VAR_STRG1_CAPACITY_AH, (int16_t)mLemon.Internal.TotalCapacity_Ah, validflag);
-  VAR_SetVariable(VAR_STRG1_BALANCED_TODAY, (int16_t)mLemon.BalancedTodayFlag, validflag);
-  VAR_SetVariable(VAR_LLOAD1_POWER_W, (int16_t)mLemon.Load.Power, validflag);
-  VAR_SetVariable(VAR_LLOAD1_CONS_WH, (int16_t)mLemon.Load.Cons_Wh, validflag);
-  VAR_SetVariable(VAR_LPV1_POWER_W, (int16_t)mLemon.Prod.Power, validflag);
-  VAR_SetVariable(VAR_LPV1_PROD_WH, (int16_t)mLemon.Prod.Prod_Wh, validflag);
-
- /* VAR_SetVariable(VAR_LPV1_S1_POWER_W  311
-  VAR_SetVariable(VAR_LPV1_S1_CURRENT_A10  312
-  VAR_SetVariable(VAR_LPV1_S1_VOLTAGE_V  313*/
-
-  // Publish BMS1
-  if(mLemon.Bms1->Active)
-  {
-     VAR_SetVariable(VAR_BMS3_VOLTAGE_V10, mLemon.Bms1->LiveData.VoltageTotal_mV/100, validflag);
-     VAR_SetVariable(VAR_BMS3_SOC, mLemon.Bms1->LiveData.SOC, validflag);
-     VAR_SetVariable(VAR_BMS3_CURRENT_A10, mLemon.Bms1->LiveData.BatteryCurrent_mA/100, validflag);
-     VAR_SetVariable(VAR_BMS3_ENERGY_STORED_WH, mLemon.Bms1->LiveData.Energystored_Wh, validflag);
-     VAR_SetVariable(VAR_BMS3_TODAY_ENERGY_WH, mLemon.Bms1->LiveData.TodayCharging_Wh, validflag);
-
-     VAR_SetVariable(VAR_BMS3_CELL1_MV, mLemon.Bms1->Cells[0].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL2_MV, mLemon.Bms1->Cells[1].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL3_MV, mLemon.Bms1->Cells[2].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL4_MV, mLemon.Bms1->Cells[3].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL5_MV, mLemon.Bms1->Cells[4].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL6_MV, mLemon.Bms1->Cells[5].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL7_MV, mLemon.Bms1->Cells[6].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL8_MV, mLemon.Bms1->Cells[7].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL9_MV, mLemon.Bms1->Cells[8].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL10_MV, mLemon.Bms1->Cells[9].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL11_MV, mLemon.Bms1->Cells[10].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL12_MV, mLemon.Bms1->Cells[11].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL13_MV, mLemon.Bms1->Cells[12].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL14_MV, mLemon.Bms1->Cells[13].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL15_MV, mLemon.Bms1->Cells[14].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL16_MV, mLemon.Bms1->Cells[15].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL1_C, mLemon.Bms1->Cells[0].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL2_C, mLemon.Bms1->Cells[1].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL3_C, mLemon.Bms1->Cells[2].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL4_C, mLemon.Bms1->Cells[3].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL5_C, mLemon.Bms1->Cells[4].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL6_C, mLemon.Bms1->Cells[5].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL7_C, mLemon.Bms1->Cells[6].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL8_C, mLemon.Bms1->Cells[7].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL9_C, mLemon.Bms1->Cells[8].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL10_C,mLemon.Bms1-> Cells[9].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL11_C, mLemon.Bms1->Cells[10].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL12_C, mLemon.Bms1->Cells[11].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL13_C, mLemon.Bms1->Cells[12].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL14_C, mLemon.Bms1->Cells[13].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL15_C, mLemon.Bms1->Cells[14].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS3_CELL16_C, mLemon.Bms1->Cells[15].Temp_C, validflag);
-  }
-
-  // Publish BMS2
-
-  if(mLemon.Bms2->Active)
-  {
-     VAR_SetVariable(VAR_BMS2_VOLTAGE_V10, mLemon.Bms2->LiveData.VoltageTotal_mV/100, validflag);
-     VAR_SetVariable(VAR_BMS2_SOC, mLemon.Bms2->LiveData.SOC, validflag);
-     VAR_SetVariable(VAR_BMS2_CURRENT_A10, mLemon.Bms2->LiveData.BatteryCurrent_mA/100, validflag);
-     VAR_SetVariable(VAR_BMS2_ENERGY_STORED_WH, mLemon.Bms2->LiveData.Energystored_Wh, validflag);
-     VAR_SetVariable(VAR_BMS2_TODAY_ENERGY_WH, mLemon.Bms2->LiveData.TodayCharging_Wh, validflag);
-
-     VAR_SetVariable(VAR_BMS2_CELL1_MV, mLemon.Bms2->Cells[0].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL2_MV, mLemon.Bms2->Cells[1].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL3_MV, mLemon.Bms2->Cells[2].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL4_MV, mLemon.Bms2->Cells[3].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL5_MV, mLemon.Bms2->Cells[4].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL6_MV, mLemon.Bms2->Cells[5].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL7_MV, mLemon.Bms2->Cells[6].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL8_MV, mLemon.Bms2->Cells[7].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL9_MV, mLemon.Bms2->Cells[8].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL10_MV, mLemon.Bms2->Cells[9].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL11_MV, mLemon.Bms2->Cells[10].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL12_MV, mLemon.Bms2->Cells[11].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL13_MV, mLemon.Bms2->Cells[12].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL14_MV, mLemon.Bms2->Cells[13].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL15_MV, mLemon.Bms2->Cells[14].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL16_MV, mLemon.Bms2->Cells[15].Voltage_mV, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL1_C, mLemon.Bms2->Cells[0].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL2_C, mLemon.Bms2->Cells[1].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL3_C, mLemon.Bms2->Cells[2].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL4_C, mLemon.Bms2->Cells[3].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL5_C, mLemon.Bms2->Cells[4].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL6_C, mLemon.Bms2->Cells[5].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL7_C, mLemon.Bms2->Cells[6].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL8_C, mLemon.Bms2->Cells[7].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL9_C, mLemon.Bms2->Cells[8].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL10_C,mLemon.Bms2-> Cells[9].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL11_C, mLemon.Bms2->Cells[10].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL12_C, mLemon.Bms2->Cells[11].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL13_C, mLemon.Bms2->Cells[12].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL14_C, mLemon.Bms2->Cells[13].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL15_C, mLemon.Bms2->Cells[14].Temp_C, validflag);
-     VAR_SetVariable(VAR_BMS2_CELL16_C, mLemon.Bms2->Cells[15].Temp_C, validflag);
-  }
-
+  e->Storage.Soc_pct.value = mLemon.Storage.Soc;
+  e->Storage.Power_W.value = mLemon.Storage.Power;
+  e->Storage.Current_A.value = mLemon.Storage.Current;
+  e->Storage.Voltage_V.value = mLemon.Storage.Voltage;
+  e->Storage.Energy_Wh.value = mLemon.Storage.Energy;
+  e->Storage.OptCharging_A.value = mLemon.Storage.OptChargingCurrent;
+  e->Storage.Capacity_Ah.value = mLemon.Internal.TotalCapacity_Ah;
+  e->Storage.BalancedToday.value = mLemon.BalancedTodayFlag;
+  e->Load.Power_W.value = mLemon.Load.Power;
+  e->Load.Cons_Wh.value = mLemon.Load.Cons_Wh;
+  e->Pv.Power_W.value = mLemon.Prod.Power;
+  e->Pv.Prod_Wh.value = mLemon.Prod.Prod_Wh;
+  VARS2_SetGroupValid(e, 1);
 }

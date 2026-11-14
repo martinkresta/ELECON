@@ -12,6 +12,7 @@
 
 
 #include "main.h"
+#include "uha_vars_gen.h"   /* sVarsMppt */
 
 
 
@@ -100,7 +101,8 @@ typedef struct
 }sRxMsg;
 
 
-void MPPT_Init(UART_HandleTypeDef* huart);
+/* pVars: produced group (Vars2.Mppt); every field becomes valid when its register was read once */
+void MPPT_Init(UART_HandleTypeDef* huart, sVarsMppt* pVars);
 // Update function, to the called periodically by the scheduler
 void MPPT_Update_100ms(void);
 

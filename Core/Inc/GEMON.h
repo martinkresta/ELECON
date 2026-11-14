@@ -13,7 +13,7 @@
 
 
 #include "main.h"
-#include "VARS.h"
+#include "uha_vars_gen.h"   /* Vars2 group types */
 #include "RTC.h"
 
 typedef struct
@@ -48,7 +48,8 @@ typedef struct
 
 
 
-void GEMON_Init(void);
+/* produced: pOut (Vars2.GlobalEnergy); read: pHome (Vars2.HomeEnergy), pWorkshop (Vars2.WorkshopEnergy) */
+void GEMON_Init(sVarsGlobalEnergy* pOut, const sVarsLocalEnergy* pHome, const sVarsLocalEnergy* pWorkshop);
 void GEMON_Update_1s(void);
 
 

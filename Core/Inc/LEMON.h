@@ -13,6 +13,7 @@
 #define INC_LEMON_H_
 
 #include "BMS.h"
+#include "uha_vars_gen.h"   /* Vars2 group types */
 
 
 #define AH2MAS                  3600000
@@ -69,8 +70,8 @@ typedef struct
 
 typedef struct
 {
-  uint16_t Pack1_Ah;
-  uint16_t Pack2_Ah;
+  uint16_t Pack80_Ah;    // house pack 80 Ah, BMS on UART3
+  uint16_t Pack220_Ah;   // house pack 220 Ah, BMS on UART2
   uint16_t Shunt_R_uOhm;
 }
 cLemonCfg;
@@ -85,14 +86,18 @@ typedef struct
   uint8_t ChargingDisabledFlag;
   uint8_t SocInitialized;
   sStrgPrivate Internal;
-  sBMS* Bms1;
-  sBMS* Bms2;
+  sBMS* Bms80;
+  sBMS* Bms220;
 }sLemon;
 
 
 
 
-void LEMON_Init(UART_HandleTypeDef* huart1, UART_HandleTypeDef* huart2);
+/* huart80 / huart220: BMS of the 80 Ah / 220 Ah pack
+ * produced: pEnergy (Vars2.HomeEnergy), pPack80 / pPack220 (Vars2.PackHome80Ah / PackHome220Ah, published by
+ *           the BMS driver); read: pMppt (Vars2.Mppt, solar power and charging current) */
+void LEMON_Init(UART_HandleTypeDef* huart80, UART_HandleTypeDef* huart220, sVarsLocalEnergy* pEnergy,
+                sVarsPack* pPack80, sVarsPack* pPack220, const sVarsMppt* pMppt);
 void LEMON_Update_1s(void);
 void LEMON_MidnightNow(void);
 void LEMON_UartRxCallback(UART_HandleTypeDef *huart, uint16_t reclength);
