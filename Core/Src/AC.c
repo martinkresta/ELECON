@@ -324,3 +324,18 @@ void AC_5kW(eACControl state)
 }
 
 */
+
+/* state of the AC state machine (read only, for the VARS2 states) */
+eACState AC_GetState(eDCACType type)
+{
+  switch (type)
+  {
+    case eDCAC_300W:
+      return AC300W.state;
+    case eDCAC_3kW:
+      return AC3kW.state;
+    case eDCAC_5kW:
+      return AC5kW.state;
+  }
+  return acs_Off;
+}
