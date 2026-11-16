@@ -2,6 +2,18 @@
 
 Newest version first. Versions before v001.11 are not listed.
 
+## v002.02 (2026-11-16)
+
+- Task: DS18B20 85.0 °C glitches (`UHA_COMMON/KnownIssues/KI-005_ds18b20_85c_glitches.md`), branch `feature/temp-85-filter`
+  (UHA_COMMON + ASW_ELECON)
+- CRC: `0x043CE012`
+
+- `TEMP.c` (shared): a readout of exactly 85.0 °C (DS18B20 power-on scratchpad 0x0550, valid CRC) is ignored and the
+  last value stays, unless the last valid value is within 80.0–90.0 °C or 85.0 came 3 times in a row.
+- Diagnostics: every ignored readout is counted; at most once a minute two node log messages go to the RPi
+  (`LOG 33`: sensor, total count, uptime in minutes; `LOG 34`: sensor, scratchpad bytes TH, config, 6, 7).
+- `OW.c`: read-only getters `OW_GetScratchpad()`, `OW_IsBusy()`; `LOG.c`: `LOG_SendEvent()`. No change of the 1-Wire timing.
+
 ## v002.01 (2026-11-15)
 
 - Task: VARS2 states step 2b (`UHA_COMMON/tasks/states_nodes.md`), branch `feature/vars2-states-2b`
