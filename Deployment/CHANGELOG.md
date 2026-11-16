@@ -2,6 +2,21 @@
 
 Newest version first. Versions before v001.11 are not listed.
 
+## v002.01 (2026-11-15)
+
+- Task: VARS2 states step 2b (`UHA_COMMON/tasks/states_nodes.md`), branch `feature/vars2-states-2b`
+  (UHA_COMMON + this project); report `UHA_COMMON/tasks/states_nodes_report.md`
+- CRC: `0x03950A26`
+
+- New VARS2 group `States.Elecon` (ids 480–483), `send: on_change` (on change, min 1 s apart, + every 20 s).
+- Inverters 300 W / 3 kW / 5 kW (REL1–3): AC state machine state as enum `InverterState`; new read-only getter
+  `AC_GetState()` in `AC.c`.
+- Exterior light: `PWROUT_GetPct(OUT1)` (OUT1 + OUT4 are always switched together, only 0 / 100).
+- Written once per second in `UpdateStates()` (in `APP_Update_1s()`, after `AC_Update_1s()`).
+- The tunnel forwards the new ids of all nodes as before (frame hook, no ELECON change needed for that).
+- Shared code: VARS2 `send: on_change` (step 2a), new YAML rows of all nodes. No change of control behaviour.
+- Flash +1.3 KB, RAM +0.5 KB (since v002.00).
+
 ## v001.17 (2026-11-14)
 
 - Task: VARS2 direct access part B (`UHA_COMMON/tasks/vars2_direct_access.md`), branch `feature/vars2_direct_access`

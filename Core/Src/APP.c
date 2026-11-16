@@ -38,9 +38,11 @@ static uint16_t RpiHB_Timer;
 static uint32_t mAppUpTime;
 
 static const sVarsMppt* mpMppt;   /* read: MPPT solar voltage for dusk / dawn */
+static sVarsStatesElecon* mpStates;   /* own states (VARS2 send: on_change), written in UpdateStates() */
 
 static void ProcessMessage(s_CanRxMsg* msg);
 static void ExtLightControl(void);
+static void UpdateStates(void);
 
 // public methods
 void APP_Init(void)
@@ -65,6 +67,8 @@ void APP_Init(void)
   LEMON_Init(&huart3, &huart2, &Vars2.HomeEnergy, &Vars2.PackHome80Ah, &Vars2.PackHome220Ah, &Vars2.Mppt);
   GEMON_Init(&Vars2.GlobalEnergy, &Vars2.HomeEnergy, &Vars2.WorkshopEnergy);
   mpMppt = &Vars2.Mppt;
+  mpStates = &Vars2.States.Elecon;
+  VARS2_SetGroupValid(mpStates, 1);   // states valid from now on (values: UpdateStates() every second)
 
   PWROUT_Init();
   ELM_Init(NUM_OF_ELEMTERS);
@@ -174,6 +178,7 @@ void APP_Update_1s(void)
 	}
 
 	ExtLightControl();
+	UpdateStates();
 
 	// check RPI hartbeat
   if(RpiHB_Timer > 0 )RpiHB_Timer --;
@@ -265,6 +270,17 @@ static void ProcessMessage(s_CanRxMsg* msg)
 		RTC_SetUnixTime(unixtime);
 	}
 	return;
+}
+
+
+/* states for VARS2 (send: on_change). AC_Update_1s() runs just before APP_Update_1s(), the exterior light is
+ * switched in ExtLightControl() above, so once per second is up to date. */
+static void UpdateStates(void)
+{
+	mpStates->Ac300W.value = (int32_t)AC_GetState(eDCAC_300W);   // REL1
+	mpStates->Ac3kW.value = (int32_t)AC_GetState(eDCAC_3kW);     // REL2
+	mpStates->Ac5kW.value = (int32_t)AC_GetState(eDCAC_5kW);     // REL3
+	mpStates->ExteriorLight_pct.value = PWROUT_GetPct(OUT1);     // OUT1 + OUT4, always switched together (0 / 100)
 }
 
 
