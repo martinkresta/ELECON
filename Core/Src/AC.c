@@ -226,6 +226,42 @@ void AC_5kW_ButtonGesture(void)
   ButtonGesture(&AC5kW);
 }
 
+// command channel (APP_OnCommand): on = the same as a person at the switch, only from acs_Off (ButtonGesture():
+// min on time, then auto off by power); already on -> ignored (no +2 h, no timer restart).
+// off = the off branch of ButtonGesture() (relay off, acs_Off) in every on state, also in acs_OnKeepSetting
+// (where a gesture would add 2 h); already off -> ignored. RemoteRequests (TECHM, 0x130) are not touched.
+static void Command(sDCAC* AC, uint8_t on)
+{
+  if (on)
+  {
+    if (AC->state == acs_Off)
+    {
+      ButtonGesture(AC);
+    }
+  }
+  else if (AC->state != acs_Off)
+  {
+    SwitchRelay(acs_OFF, AC->RelayPort, AC->RelayPin);
+    AC->state = acs_Off;
+  }
+}
+
+// 3 kW / 5 kW only; the 300 W has no remote on / off (always on, its own auto start / auto off)
+void AC_Command(eDCACType type, uint8_t on)
+{
+  switch (type)
+  {
+    case eDCAC_3kW:
+      Command(&AC3kW, on);
+      break;
+    case eDCAC_5kW:
+      Command(&AC5kW, on);
+      break;
+    default:
+      break;
+  }
+}
+
 void AC_RemoteRequest(eDCACType type, eACControl request, uint16_t keepOnTime)
 {
   switch (type)

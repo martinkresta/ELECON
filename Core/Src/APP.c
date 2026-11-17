@@ -205,10 +205,15 @@ void APP_RpiHeartbeat(void)
 // One case per CMDID_* with target ELECON (ids 400..499): clamp to CMD_<NAME>_MIN/_MAX, call the module API.
 void APP_OnCommand(eCmdId id, float value)
 {
-  (void)value;
   switch (id)
   {
-    default:   // no ELECON commands in step 3a
+    case CMDID_AC_3KW:
+      AC_Command(eDCAC_3kW, (uint8_t)CMD_Clamp(value, CMD_AC_3KW_MIN, CMD_AC_3KW_MAX));
+      break;
+    case CMDID_AC_5KW:
+      AC_Command(eDCAC_5kW, (uint8_t)CMD_Clamp(value, CMD_AC_5KW_MIN, CMD_AC_5KW_MAX));
+      break;
+    default:
       break;
   }
 }

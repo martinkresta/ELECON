@@ -69,6 +69,8 @@ void AC_3kW_ButtonGesture(void);
 void AC_5kW_ButtonGesture(void);
 
 void AC_RemoteRequest(eDCACType type, eACControl request, uint16_t keepOnTime);
+/* command channel: on / off like the wall switch (3 kW, 5 kW; other types ignored), see AC.c */
+void AC_Command(eDCACType type, uint8_t on);
 
 /* state of the AC state machine (read only, for the VARS2 states) */
 eACState AC_GetState(eDCACType type);

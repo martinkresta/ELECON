@@ -2,6 +2,20 @@
 
 Newest version first. Versions before v001.11 are not listed.
 
+## v002.04 (2026-11-17)
+
+- Task: commands step 3c (`UHA_COMMON/tasks/cmd_inverters_recu.md`, mapping agreed in `UHA_COMMON/tasks/cmd_inverters_recu_report.md`),
+  branch `feature/cmd-3c` (UHA_COMMON + ASW_ELECON + ASW_ELECON_D + ASW_RECU_NUCLEO)
+- CRC: `0xCC7BBD54`
+
+- Commands (local path from the RPi, `SCOM.c` -> `CMD_ProcessFrame()` -> `APP_OnCommand()`): `CMD_AC_3KW` (401),
+  `CMD_AC_5KW` (402), bool. `AC_Command()`: on = `ButtonGesture()` from `acs_Off` only (min on time, then auto off
+  by power, as the wall switch); already on -> ignored. Off = relay off + `acs_Off` in every on state (also in the
+  first 5 s, where a gesture would add 2 h). TECHM's `RemoteRequests` (0x130) are not touched.
+- The 300 W inverter gets no command.
+- New VARS2 table (RECU setpoint states 512 / 513), so the tunnel knows them.
+- Flash +456 B, RAM +32 B (since v002.03).
+
 ## v002.03 (2026-11-17)
 
 - Task: command channel step 3a (`UHA_COMMON/tasks/cmd_channel_fw.md`, spec `UHA_COMMON/VarDefs/CMD_spec.md`),
