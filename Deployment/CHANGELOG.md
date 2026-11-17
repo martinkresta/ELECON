@@ -2,6 +2,22 @@
 
 Newest version first. Versions before v001.11 are not listed.
 
+## v002.03 (2026-11-17)
+
+- Task: command channel step 3a (`UHA_COMMON/tasks/cmd_channel_fw.md`, spec `UHA_COMMON/VarDefs/CMD_spec.md`),
+  branch `feature/cmd-channel` (UHA_COMMON + ASW_ELECON + ASW_IOBOARD_U)
+- CRC: `0x25B991B7`
+
+- New RPISERP packet `0x52 CMD_RPI_COMMAND` (RPi -> ELECON), `SCOM.c ForwardRpiCommand()`: data length exactly 8,
+  rate limit 10 per 1 s and 20 per 60 s (fixed windows), CAN frame id `0x200 + (target & 0x0F)` (fixed base), DLC 8,
+  data `[cmd_lo, cmd_hi, v0..v3, seq, 0]`; target 4 (ELECON) is handled locally by `CMD_ProcessFrame()`, not sent.
+  ELECON does not check command ids or values (the target node does).
+- Every drop: node log `LOG 48` (eleLog 0x30: reason 1 = length / 2 = rate, info, length drops, rate drops u16),
+  at most one per second. Debug counters `gScomCmdDropLen`, `gScomCmdDropRate`, `gScomCmdForwarded`, `gScomCmdLocal`.
+- `APP_OnCommand()`: empty switch (no ELECON commands yet). Shared: `CMD.c`, `uha_cmds_gen.c`, `COM.c` consumes
+  `0x200..0x20F` frames (own -> `CMD_ProcessFrame()`, others dropped).
+- Flash +1.0 KB (+1008 B), RAM +32 B (since v002.02). No change of existing behaviour.
+
 ## v002.02 (2026-11-16)
 
 - Task: DS18B20 85.0 °C glitches (`UHA_COMMON/KnownIssues/KI-005_ds18b20_85c_glitches.md`), branch `feature/temp-85-filter`

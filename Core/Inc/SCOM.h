@@ -41,6 +41,17 @@
 
 #define  CMD_RPI_VAR_VALUE  			0x50
 #define  CMD_RPI_RTC_SYNC  				0x51
+#define  CMD_RPI_COMMAND  				0x52   // RPi command -> CAN 0x200 + target (CMD_spec.md sec.2, 3)
+
+// RPi command forwarding (CMD_spec.md sec.3)
+#define  SCOM_CMD_DATA_LEN        8       // exact data length of a CMD_RPI_COMMAND packet
+#define  SCOM_CMD_MAX_PER_S       10      // rate limit: commands per 1 s window
+#define  SCOM_CMD_MAX_PER_MIN     20      // rate limit: commands per 60 s window
+#define  SCOM_CMD_LOG_MIN_MS      1000    // at most one drop LOG per second (drops in between are counted)
+#define  SCOM_LOG_CMD_DROP        0x30    // eleLog payload: [0x30, reason, info, len_drops (u8 sat.), rate_drops u16 LE]
+                                          //   drop counts = totals since start (not since the last LOG)
+#define  SCOM_CMD_DROP_LENGTH     1       //   reason 1: data length != 8, info = received data length
+#define  SCOM_CMD_DROP_RATE       2       //   reason 2: over 10/s or 20/min, info = target byte
 
 #define  MSG_START_B1							0x7F
 #define  MSG_START_B2							0xAA

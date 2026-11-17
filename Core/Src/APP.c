@@ -28,6 +28,7 @@
 #include "LEMON.h"
 #include "GEMON.h"
 #include "LOG.h"
+#include "CMD.h"
 
 
 
@@ -197,6 +198,19 @@ void APP_RpiHeartbeat(void)
 {
   RpiHB_Timer = 80;
   UI_LED_B_SetMode(eUI_OFF);  // signal missingRPI HB
+}
+
+
+// commands for this node (CMD_spec.md): RPi commands with target ELECON come from SCOM.c, CAN 0x204 from COM.
+// One case per CMDID_* with target ELECON (ids 400..499): clamp to CMD_<NAME>_MIN/_MAX, call the module API.
+void APP_OnCommand(eCmdId id, float value)
+{
+  (void)value;
+  switch (id)
+  {
+    default:   // no ELECON commands in step 3a
+      break;
+  }
 }
 
 /*Private methods*/
